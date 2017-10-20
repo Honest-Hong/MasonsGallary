@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_ryan"
+        android:title="라이언(Ryan)"
+        />
+    <item
+        android:id="@+id/menu_muzi"
+        android:title="무지(Muzi)"
+        />
+    <item
+        android:id="@+id/menu_apeach"
+        android:title="어피치(Apeach)"
+        />
+    <item
+        android:id="@+id/menu_frodo"
+        android:title="프로도(Frodo)"
+        />
+    <item
+        android:id="@+id/menu_neo"
+        android:title="네오(Neo)"
+        />
+    <item
+        android:id="@+id/menu_jay_g"
+        android:title="제이지(Jay-G)"
+        />
+    <item
+        android:id="@+id/menu_con"
+        android:title="콘(Con)"
+        />
+</menu>

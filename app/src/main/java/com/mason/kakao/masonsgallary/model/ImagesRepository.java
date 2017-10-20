@@ -1,0 +1,117 @@
+package com.mason.kakao.masonsgallary.model;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.provider.MediaStore;
+import android.util.Log;
+
+import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.Tag;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.schedulers.Schedulers;
+
+/**
+ * Created by kakao on 2017. 10. 20..
+ */
+
+public class ImagesRepository {
+    private Context context;
+    private List<ImageData> list = null;
+
+    public ImagesRepository(Context context) {
+        this.context = context;
+    }
+
+    public void tagImage(String path, Tag tag) {
+        for(ImageData imageData : list) {
+            imageData.setTag(tag);
+        }
+    }
+
+    public Observable<List<ImageData>> getList() {
+        return Observable.create(new ObservableOnSubscribe<List<ImageData>>() {
+                    @Override
+                    public void subscribe(@NonNull ObservableEmitter<List<ImageData>> e) throws Exception {
+                        e.onNext(searchImageData());
+                    }
+                })
+                .delay(500, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    public Observable<List<ImageData>> getTaggedList(final Tag tag) {
+        return Observable.create(new ObservableOnSubscribe<List<ImageData>>() {
+                    @Override
+                    public void subscribe(@NonNull ObservableEmitter<List<ImageData>> e) throws Exception {
+                        e.onNext(retrieveImages(tag));
+                    }
+                })
+                .delay(500, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    private List<ImageData> searchImageData() {
+        if(list != null) {
+            return list;
+        }
+
+        final String[] projection = {
+                MediaStore.Images.Media.DATA,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.DATE_MODIFIED
+        };
+        final Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
+        List<ImageData> result = new ArrayList<>();
+        if (cursor != null) {
+            if(cursor.moveToFirst()) {
+                Tag[] arr = Tag.values();
+                Random random = new Random();
+                final int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                final int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                final int dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED);
+                do {
+                    String data = cursor.getString(dataColumn);
+                    String name = cursor.getString(nameColumn);
+                    String date = cursor.getString(dateColumn);
+                    int index = Math.abs(random.nextInt()) % arr.length;
+                    result.add(new ImageData(data, name, arr[index], date));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        this.list = result;
+        return result;
+    }
+
+    private List<ImageData> retrieveImages(Tag tag) {
+        if(list == null) {
+            return Collections.emptyList();
+        }
+
+        List<ImageData> list = new ArrayList<>();
+        for(ImageData imageData : this.list) {
+            if(imageData.getTag() == tag) {
+                list.add(imageData);
+            }
+        }
+
+        return list;
+    }
+}

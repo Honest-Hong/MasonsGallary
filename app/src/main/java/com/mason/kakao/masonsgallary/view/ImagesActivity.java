@@ -91,24 +91,33 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         Tag tag = getTagByMenuId(item.getItemId());
 
         if(tag != null) {
-            Observable<List<ImageData>> observable = MasonApplication.get(this).getImagesRepository().getList(tag);
-            setLoadingIndicator(true);
-            observable.subscribe(new SimpleObserver<List<ImageData>>() {
-                @Override
-                public void onNext(@NonNull List<ImageData> list) {
-                    setLoadingIndicator(false);
-                    mImagesAdapter.setList(list);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable e) {
-                    setLoadingIndicator(false);
-                }
-            });
+            loadImages(tag);
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    private void loadImages(Tag tag) {
+        setLoadingIndicator(true);
+        MasonApplication.get(this).getImagesRepository().getList(tag)
+                .subscribe(new SimpleObserver<List<ImageData>>() {
+                    @Override
+                    public void onNext(@NonNull List<ImageData> list) {
+                        setLoadingIndicator(false);
+                        mImagesAdapter.setList(list);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        setLoadingIndicator(false);
+                    }
+                });
+    }
+
+    private void setLoadingIndicator(boolean load) {
+        mRecyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
+        mProgressBar.setVisibility(load ? View.VISIBLE : View.GONE);
     }
 
     private Tag getTagByMenuId(int id) {
@@ -164,7 +173,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        loadImages();
+                        loadImages(Tag.All);
                     }
 
                     @Override
@@ -174,27 +183,5 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 })
                 .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
                 .check();
-    }
-
-    private void loadImages() {
-        setLoadingIndicator(true);
-        MasonApplication.get(this).getImagesRepository().getList(Tag.All)
-                .subscribe(new SimpleObserver<List<ImageData>>() {
-                    @Override
-                    public void onNext(@NonNull List<ImageData> list) {
-                        setLoadingIndicator(false);
-                        mImagesAdapter.setList(list);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        setLoadingIndicator(false);
-                    }
-                });
-    }
-
-    private void setLoadingIndicator(boolean load) {
-        mRecyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
-        mProgressBar.setVisibility(load ? View.VISIBLE : View.GONE);
     }
 }

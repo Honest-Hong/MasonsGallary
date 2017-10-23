@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.view.adapter.holder;
+package com.mason.kakao.masonsgallary.images;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseVH;
+import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.squareup.picasso.Picasso;
 
@@ -20,24 +21,15 @@ import java.io.File;
  */
 
 public class ImageVH extends BaseVH<ImageData>{
-    private Context context;
-    private ImageView imageTag;
-    private ImageView imageView;
-    private TextView textName;
-    private TextView textPath;
+    private ItemImageBinding mBinding;
 
-    public ImageVH(View itemView) {
-        super(itemView);
-        this.context = itemView.getContext();
-        imageTag = itemView.findViewById(R.id.image_tag);
-        imageView = itemView.findViewById(R.id.image_view);
-        textName = itemView.findViewById(R.id.text_name);
-        textPath = itemView.findViewById(R.id.text_path);
+    public ImageVH(ItemImageBinding binding) {
+        super(binding.getRoot());
+        this.mBinding = binding;
     }
 
     @Override
     public void setupView(ImageData data) {
-        this.data = data;
         int drawableId = 0;
         switch(data.getTag()) {
             case Ryan:
@@ -66,19 +58,18 @@ public class ImageVH extends BaseVH<ImageData>{
                 break;
         }
         if(drawableId == 0) {
-            imageTag.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mBinding.imageTag.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
         } else {
-            Picasso.with(context)
+            Picasso.with(mBinding.imageTag.getContext())
                     .load(drawableId)
                     .fit()
-                    .into(imageTag);
+                    .into(mBinding.imageTag);
         }
-        Picasso.with(context)
+        Picasso.with(mBinding.imageView.getContext())
                 .load(new File(data.getPath()))
                 .fit()
                 .centerCrop()
-                .into(imageView);
-        textName.setText(data.getName());
-        textPath.setText(data.getPath());
+                .into(mBinding.imageView);
+        mBinding.setData(data);
     }
 }

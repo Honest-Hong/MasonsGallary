@@ -1,13 +1,14 @@
-package com.mason.kakao.masonsgallary.view.adapter;
+package com.mason.kakao.masonsgallary.images;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.mason.kakao.masonsgallary.R;
+import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
-import com.mason.kakao.masonsgallary.view.adapter.holder.ImageVH;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +33,8 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
 
     @Override
     public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
+        ItemImageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.item_image, parent, false);
+        return new ImageVH(binding);
     }
 
     @Override

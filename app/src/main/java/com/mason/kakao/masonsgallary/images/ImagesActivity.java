@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.view;
+package com.mason.kakao.masonsgallary.images;
 
 import android.Manifest;
 import android.content.res.Configuration;
@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -22,10 +21,8 @@ import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.base.SimpleObserver;
-import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
-import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,36 +30,32 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesContracter.View {
     private RecyclerView mRecyclerView;
     private ImagesAdapter mImagesAdapter;
     private ProgressBar mProgressBar;
-    private NavigationView mNavigationView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+
+    private ImagesContracter.Presenter mPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mPresenter = new ImagesPresenter(this, MasonApplication.get(this).getImagesRepository());
         checkPermissions();
     }
 
     @Override
-    public void setupActivity() {
-        setContentView(R.layout.activity_images);
+    public void showImages(List<ImageData> list) {
+        mImagesAdapter.setList(list);
+    }
 
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-        }
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this);
-        mRecyclerView.setAdapter(mImagesAdapter);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        setupDrawer();
+    @Override
+    public void showLoadingIndicator(boolean show) {
+        mRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -114,29 +107,34 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
 
         if(tag != null) {
-            Observable<List<ImageData>> observable = MasonApplication.get(this).getImagesRepository().getTaggedList(tag);
-            setLoadingIndicator(true);
-            observable.subscribe(new SimpleObserver<List<ImageData>>() {
-                @Override
-                public void onNext(@NonNull List<ImageData> list) {
-                    setLoadingIndicator(false);
-                    mImagesAdapter.setList(list);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable e) {
-                    setLoadingIndicator(false);
-                }
-            });
+            mPresenter.loadTaggedImages(tag);
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return false;
     }
 
+    @Override
+    public void setupActivity() {
+        setContentView(R.layout.activity_images);
+
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mImagesAdapter = new ImagesAdapter(this);
+        mRecyclerView.setAdapter(mImagesAdapter);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        setupDrawer();
+    }
+
     private void setupDrawer() {
-        mNavigationView = (NavigationView) findViewById(R.id.navigation);
-        mNavigationView.setNavigationItemSelectedListener(this);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
+        navigationView.setNavigationItemSelectedListener(this);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
@@ -159,7 +157,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        loadImages();
+                        mPresenter.loadImages();
                     }
 
                     @Override
@@ -169,27 +167,5 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 })
                 .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
                 .check();
-    }
-
-    private void loadImages() {
-        setLoadingIndicator(true);
-        MasonApplication.get(this).getImagesRepository().getList()
-                .subscribe(new SimpleObserver<List<ImageData>>() {
-                    @Override
-                    public void onNext(@NonNull List<ImageData> list) {
-                        setLoadingIndicator(false);
-                        mImagesAdapter.setList(list);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        setLoadingIndicator(false);
-                    }
-                });
-    }
-
-    private void setLoadingIndicator(boolean load) {
-        mRecyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
-        mProgressBar.setVisibility(load ? View.VISIBLE : View.GONE);
     }
 }

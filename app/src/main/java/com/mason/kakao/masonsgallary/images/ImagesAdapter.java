@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.view.adapter;
+package com.mason.kakao.masonsgallary.images;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
-import com.mason.kakao.masonsgallary.view.adapter.holder.ImageVH;
 
 import java.util.Collections;
 import java.util.List;

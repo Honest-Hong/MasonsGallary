@@ -88,8 +88,32 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
+        Tag tag = getTagByMenuId(item.getItemId());
+
+        if(tag != null) {
+            Observable<List<ImageData>> observable = MasonApplication.get(this).getImagesRepository().getList(tag);
+            setLoadingIndicator(true);
+            observable.subscribe(new SimpleObserver<List<ImageData>>() {
+                @Override
+                public void onNext(@NonNull List<ImageData> list) {
+                    setLoadingIndicator(false);
+                    mImagesAdapter.setList(list);
+                }
+
+                @Override
+                public void onError(@NonNull Throwable e) {
+                    setLoadingIndicator(false);
+                }
+            });
+        }
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        return false;
+    }
+
+    private Tag getTagByMenuId(int id) {
         Tag tag = null;
-        switch(item.getItemId()) {
+        switch(id) {
             case R.id.menu_ryan:
                 tag = Tag.Ryan;
                 break;
@@ -112,26 +136,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 tag = Tag.Con;
                 break;
         }
-
-        if(tag != null) {
-            Observable<List<ImageData>> observable = MasonApplication.get(this).getImagesRepository().getTaggedList(tag);
-            setLoadingIndicator(true);
-            observable.subscribe(new SimpleObserver<List<ImageData>>() {
-                @Override
-                public void onNext(@NonNull List<ImageData> list) {
-                    setLoadingIndicator(false);
-                    mImagesAdapter.setList(list);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable e) {
-                    setLoadingIndicator(false);
-                }
-            });
-        }
-
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return false;
+        return tag;
     }
 
     private void setupDrawer() {
@@ -173,7 +178,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
 
     private void loadImages() {
         setLoadingIndicator(true);
-        MasonApplication.get(this).getImagesRepository().getList()
+        MasonApplication.get(this).getImagesRepository().getList(Tag.All)
                 .subscribe(new SimpleObserver<List<ImageData>>() {
                     @Override
                     public void onNext(@NonNull List<ImageData> list) {

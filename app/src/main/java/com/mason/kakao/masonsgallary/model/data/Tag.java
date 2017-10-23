@@ -12,5 +12,6 @@ public enum Tag {
     Neo,
     Tube,
     Jay_G,
-    Con
+    Con,
+    All
 }

@@ -8,13 +8,11 @@ public class ImageData {
     private String path;
     private String name;
     private Tag tag;
-    private String date;
 
     public ImageData(String path, String name, Tag tag, String date) {
         this.path = path;
         this.name = name;
         this.tag = tag;
-        this.date = date;
     }
 
     public String getPath() {
@@ -27,13 +25,5 @@ public class ImageData {
 
     public Tag getTag() {
         return tag;
-    }
-
-    public void setTag(Tag tag) {
-        this.tag = tag;
-    }
-
-    public String getDate() {
-        return date;
     }
 }

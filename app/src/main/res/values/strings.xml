@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Mason\'s Gallary</string>
+    <string name="ryan">라이언(Ryan)</string>
+    <string name="muzi">무지(Muzi)</string>
+    <string name="apeach">어피치(Apeach)</string>
+    <string name="frodo">프로도(Frodo)</string>
+    <string name="neo">네오(Neo)</string>
+    <string name="jay_g">제이지(Jay-G)</string>
+    <string name="con">콘(Con)</string>
+
+    <string name="drawer_open">open</string>
+    <string name="drawer_close">close</string>
 </resources>

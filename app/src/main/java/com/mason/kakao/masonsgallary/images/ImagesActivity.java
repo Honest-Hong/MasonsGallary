@@ -48,6 +48,24 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     }
 
     @Override
+    public void setupActivity() {
+        setContentView(R.layout.activity_images);
+
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mImagesAdapter = new ImagesAdapter(this);
+        mRecyclerView.setAdapter(mImagesAdapter);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        setupDrawer();
+    }
+
+    @Override
     public void showImages(List<ImageData> list) {
         mImagesAdapter.setList(list);
     }
@@ -81,8 +99,19 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
+        Tag tag = getTagByMenuId(item.getItemId());
+
+        if(tag != null) {
+            mPresenter.loadImages(tag);
+        }
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        return false;
+    }
+
+    private Tag getTagByMenuId(int id) {
         Tag tag = null;
-        switch(item.getItemId()) {
+        switch (id) {
             case R.id.menu_ryan:
                 tag = Tag.Ryan;
                 break;
@@ -105,31 +134,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 tag = Tag.Con;
                 break;
         }
-
-        if(tag != null) {
-            mPresenter.loadTaggedImages(tag);
-        }
-
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return false;
-    }
-
-    @Override
-    public void setupActivity() {
-        setContentView(R.layout.activity_images);
-
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-        }
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this);
-        mRecyclerView.setAdapter(mImagesAdapter);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        setupDrawer();
+        return tag;
     }
 
     private void setupDrawer() {
@@ -157,7 +162,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        mPresenter.loadImages();
+                        mPresenter.loadImages(Tag.All);
                     }
 
                     @Override

@@ -25,27 +25,9 @@ public class ImagesPresenter implements ImagesContracter.Presenter{
     }
 
     @Override
-    public void loadImages() {
+    public void loadImages(Tag tag) {
         mView.showLoadingIndicator(true);
-        mRepository.getList().subscribe(new SimpleObserver<List<ImageData>>() {
-            @Override
-            public void onNext(@NonNull List<ImageData> list) {
-                mView.showLoadingIndicator(false);
-                mView.showImages(list);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-                mView.showLoadingIndicator(false);
-            }
-        });
-    }
-
-    @Override
-    public void loadTaggedImages(Tag tag) {
-        mView.showLoadingIndicator(true);
-        Observable<List<ImageData>> observable = mRepository.getTaggedList(tag);
-        observable.subscribe(new SimpleObserver<List<ImageData>>() {
+        mRepository.getList(tag).subscribe(new SimpleObserver<List<ImageData>>() {
             @Override
             public void onNext(@NonNull List<ImageData> list) {
                 mView.showLoadingIndicator(false);

@@ -33,29 +33,18 @@ public class ImagesRepository {
         this.context = context;
     }
 
-    public void tagImage(String path, Tag tag) {
-        for(ImageData imageData : list) {
-            imageData.setTag(tag);
-        }
-    }
-
-    public Observable<List<ImageData>> getList() {
+    public Observable<List<ImageData>> getList(final Tag tag) {
         return Observable.create(new ObservableOnSubscribe<List<ImageData>>() {
                     @Override
                     public void subscribe(@NonNull ObservableEmitter<List<ImageData>> e) throws Exception {
-                        e.onNext(searchImageData());
-                    }
-                })
-                .delay(500, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    public Observable<List<ImageData>> getTaggedList(final Tag tag) {
-        return Observable.create(new ObservableOnSubscribe<List<ImageData>>() {
-                    @Override
-                    public void subscribe(@NonNull ObservableEmitter<List<ImageData>> e) throws Exception {
-                        e.onNext(retrieveImages(tag));
+                        if(tag == Tag.All) {
+                            e.onNext(searchImageData());
+                        } else {
+                            if(list == null) {
+                                searchImageData();
+                            }
+                            e.onNext(retrieveImages(tag));
+                        }
                     }
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -90,7 +79,7 @@ public class ImagesRepository {
                     String data = cursor.getString(dataColumn);
                     String name = cursor.getString(nameColumn);
                     String date = cursor.getString(dateColumn);
-                    int index = Math.abs(random.nextInt()) % arr.length;
+                    int index = Math.abs(random.nextInt()) % (arr.length - 1);
                     result.add(new ImageData(data, name, arr[index], date));
                 } while (cursor.moveToNext());
             }

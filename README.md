@@ -1,4 +1,4 @@
-# MasonsGallary
+# MasonsGallery
 
 This repository contains samples that compare the Android architecture. The Android architectures are MVC, MVP, and MVVM.
 

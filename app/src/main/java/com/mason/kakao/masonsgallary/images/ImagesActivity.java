@@ -18,16 +18,20 @@ import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.databinding.ActivityImagesBinding;
+import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
+import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
 import java.util.ArrayList;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, TagChangeListener {
     private ActivityImagesBinding mBinding;
     private ActionBarDrawerToggle mDrawerToggle;
+    private ImagesAdapter mImagesAdapter;
 
     private ImagesViewModel mViewModel;
+    private Tag mFilteredTag = Tag.All;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +50,8 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
         mBinding.recyclerView.setHasFixedSize(true);
         mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mBinding.recyclerView.setAdapter(new ImagesAdapter(this));
+        mImagesAdapter = new ImagesAdapter(this, this);
+        mBinding.recyclerView.setAdapter(mImagesAdapter);
         mBinding.navigation.setNavigationItemSelectedListener(this);
         mDrawerToggle = new ActionBarDrawerToggle(this, mBinding.drawerLayout, R.string.drawer_open, R.string.drawer_close);
         mBinding.drawerLayout.addDrawerListener(mDrawerToggle);
@@ -80,12 +85,32 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-        if(tag != null) {
-            mViewModel.loadList(tag);
+        if(tag != mFilteredTag) {
+            mFilteredTag = tag;
+            mViewModel.loadList(mFilteredTag);
         }
 
         mBinding.drawerLayout.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    @Override
+    public void selectTag(final ImageData imageData) {
+        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
+            @Override
+            public void onSelect(Tag tag) {
+                if(tag == mFilteredTag) {
+                    return;
+                }
+
+                if(mFilteredTag == Tag.All) {
+                    mImagesAdapter.changeImageData(imageData);
+                    mViewModel.changeImageData(imageData);
+                } else {
+                    mImagesAdapter.removeImageData(imageData);
+                }
+            }
+        }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
     }
 
     private void checkPermissions() {
@@ -93,7 +118,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        mViewModel.loadList(Tag.All);
+                        mViewModel.loadList(mFilteredTag);
                     }
 
                     @Override
@@ -108,6 +133,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     private Tag getTagByMenuId(int id) {
         Tag tag = null;
         switch(id) {
+            case R.id.menu_all:
+                tag = Tag.All;
+                break;
             case R.id.menu_ryan:
                 tag = Tag.Ryan;
                 break;
@@ -122,6 +150,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 break;
             case R.id.menu_neo:
                 tag = Tag.Neo;
+                break;
+            case R.id.menu_tube:
+                tag = Tag.Tube;
                 break;
             case R.id.menu_jay_g:
                 tag = Tag.Jay_G;

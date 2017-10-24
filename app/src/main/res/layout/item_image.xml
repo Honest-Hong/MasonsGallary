@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:background="#888">
+        android:background="?attr/selectableItemBackground">
 
         <ImageView
             android:id="@+id/image_tag"

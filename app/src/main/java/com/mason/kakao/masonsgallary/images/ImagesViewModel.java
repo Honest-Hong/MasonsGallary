@@ -46,4 +46,8 @@ public class ImagesViewModel {
     public List<ImageData> getList() {
         return mList;
     }
+
+    public void changeImageData(ImageData imageData) {
+        mRepository.changeImageData(imageData);
+    }
 }

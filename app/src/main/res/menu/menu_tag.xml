@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/menu_all"
+        android:title="@string/all"
+        />
+    <item
         android:id="@+id/menu_ryan"
         android:title="@string/ryan"
         android:icon="@drawable/tag_ryan"
@@ -24,6 +28,11 @@
         android:id="@+id/menu_neo"
         android:title="@string/neo"
         android:icon="@drawable/tag_neo"
+        />
+    <item
+        android:id="@+id/menu_tube"
+        android:title="@string/tube"
+        android:icon="@drawable/tag_tube"
         />
     <item
         android:id="@+id/menu_jay_g"

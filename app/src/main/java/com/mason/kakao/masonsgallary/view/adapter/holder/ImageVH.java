@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseVH;
+import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.squareup.picasso.Picasso;
 

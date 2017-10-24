@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -22,7 +21,7 @@ import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.base.SimpleObserver;
-import com.mason.kakao.masonsgallary.model.ImagesRepository;
+import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
@@ -30,16 +29,16 @@ import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesAdapter.TagChangeListener {
     private RecyclerView mRecyclerView;
     private ImagesAdapter mImagesAdapter;
     private ProgressBar mProgressBar;
     private NavigationView mNavigationView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+    private Tag mFilterTag = Tag.All;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +58,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this);
+        mImagesAdapter = new ImagesAdapter(this, this);
         mRecyclerView.setAdapter(mImagesAdapter);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         setupDrawer();
@@ -89,13 +88,30 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-
-        if(tag != null) {
-            loadImages(tag);
+        if(tag != mFilterTag) {
+            mFilterTag = tag;
+            loadImages(mFilterTag);
         }
-
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    @Override
+    public void selectTag(final ImageData imageData) {
+        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
+            @Override
+            public void onSelect(Tag tag) {
+                if(tag == mFilterTag) {
+                    return;
+                }
+
+                if(mFilterTag == Tag.All) {
+                    mImagesAdapter.changeImageData(imageData);
+                } else {
+                    mImagesAdapter.removeImageData(imageData);
+                }
+            }
+        }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
     }
 
     private void loadImages(Tag tag) {
@@ -123,6 +139,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     private Tag getTagByMenuId(int id) {
         Tag tag = null;
         switch(id) {
+            case R.id.menu_all:
+                tag = Tag.All;
+                break;
             case R.id.menu_ryan:
                 tag = Tag.Ryan;
                 break;
@@ -137,6 +156,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 break;
             case R.id.menu_neo:
                 tag = Tag.Neo;
+                break;
+            case R.id.menu_tube:
+                tag = Tag.Tube;
                 break;
             case R.id.menu_jay_g:
                 tag = Tag.Jay_G;
@@ -173,7 +195,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        loadImages(Tag.All);
+                        loadImages(mFilterTag);
                     }
 
                     @Override

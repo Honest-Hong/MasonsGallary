@@ -22,6 +22,7 @@ import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
+import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
@@ -40,9 +41,12 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     private ActionBarDrawerToggle mDrawerToggle;
     private Tag mFilterTag = Tag.All;
 
+    private ImagesRepository mRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mRepository = MasonApplication.get(this).getImagesRepository();
         checkPermissions();
     }
 
@@ -107,6 +111,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
 
                 if(mFilterTag == Tag.All) {
                     mImagesAdapter.changeImageData(imageData);
+                    mRepository.changeImageData(imageData);
                 } else {
                     mImagesAdapter.removeImageData(imageData);
                 }
@@ -116,7 +121,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
 
     private void loadImages(Tag tag) {
         setLoadingIndicator(true);
-        MasonApplication.get(this).getImagesRepository().getList(tag)
+        mRepository.getList(tag)
                 .subscribe(new SimpleObserver<List<ImageData>>() {
                     @Override
                     public void onNext(@NonNull List<ImageData> list) {

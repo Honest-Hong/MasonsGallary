@@ -10,4 +10,6 @@
 
     <string name="drawer_open">open</string>
     <string name="drawer_close">close</string>
+    <string name="all">모두(All)</string>
+    <string name="tube">튜브(Tube)</string>
 </resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tags">
+        <item>@string/ryan</item>
+        <item>@string/muzi</item>
+        <item>@string/apeach</item>
+        <item>@string/frodo</item>
+        <item>@string/neo</item>
+        <item>@string/tube</item>
+        <item>@string/jay_g</item>
+        <item>@string/con</item>
+    </string-array>
+</resources>

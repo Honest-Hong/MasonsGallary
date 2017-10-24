@@ -52,6 +52,9 @@ public class ImagesRepository {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    public void changeImageData(ImageData imageData) {
+    }
+
     private List<ImageData> searchImageData() {
         if(list != null) {
             return list;

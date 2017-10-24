@@ -17,5 +17,6 @@ public interface ImagesContracter {
 
     interface Presenter {
         void loadImages(Tag tag);
+        void changeImageData(ImageData imageData);
     }
 }

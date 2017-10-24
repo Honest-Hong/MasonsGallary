@@ -40,4 +40,9 @@ public class ImagesPresenter implements ImagesContracter.Presenter{
             }
         });
     }
+
+    @Override
+    public void changeImageData(ImageData imageData) {
+        mRepository.changeImageData(imageData);
+    }
 }

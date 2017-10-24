@@ -1,6 +1,5 @@
 package com.mason.kakao.masonsgallary.images;
 
-import android.Manifest;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -12,36 +11,30 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.MenuItem;
 
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
 import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.databinding.ActivityImagesBinding;
-import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
-import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
-import java.util.ArrayList;
-
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, TagChangeListener {
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private ImagesContract.ViewModel mViewModel;
     private ActivityImagesBinding mBinding;
     private ActionBarDrawerToggle mDrawerToggle;
-    private ImagesAdapter mImagesAdapter;
-
-    private ImagesViewModel mViewModel;
-    private Tag mFilteredTag = Tag.All;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkPermissions();
+        mViewModel.onCreate();
     }
 
     @Override
     public void setupActivity() {
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_images);
+        mViewModel = new ImagesViewModel(this, MasonApplication.get(this).getImagesRepository());
+        mBinding.setViewModel(mViewModel);
+        mBinding.setList(mViewModel.getList());
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -50,15 +43,19 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
         mBinding.recyclerView.setHasFixedSize(true);
         mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this, this);
-        mBinding.recyclerView.setAdapter(mImagesAdapter);
+        mBinding.recyclerView.setAdapter(new ImagesAdapter(this, mViewModel));
         mBinding.navigation.setNavigationItemSelectedListener(this);
         mDrawerToggle = new ActionBarDrawerToggle(this, mBinding.drawerLayout, R.string.drawer_open, R.string.drawer_close);
         mBinding.drawerLayout.addDrawerListener(mDrawerToggle);
+    }
 
-        mViewModel = new ImagesViewModel(MasonApplication.get(this).getImagesRepository());
-        mBinding.setViewModel(mViewModel);
-        mBinding.setList(mViewModel.getList());
+    @Override
+    public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
+        Tag tag = getTagByMenuId(item.getItemId());
+        mViewModel.changeFilter(tag);
+
+        mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+        return false;
     }
 
     @Override
@@ -80,54 +77,6 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
-        Tag tag = getTagByMenuId(item.getItemId());
-        if(tag != mFilteredTag) {
-            mFilteredTag = tag;
-            mViewModel.loadList(mFilteredTag);
-        }
-
-        mBinding.drawerLayout.closeDrawer(GravityCompat.START);
-        return false;
-    }
-
-    @Override
-    public void selectTag(final ImageData imageData) {
-        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
-            @Override
-            public void onSelect(Tag tag) {
-                if(tag == mFilteredTag) {
-                    return;
-                }
-
-                if(mFilteredTag == Tag.All) {
-                    mImagesAdapter.changeImageData(imageData);
-                    mViewModel.changeImageData(imageData);
-                } else {
-                    mImagesAdapter.removeImageData(imageData);
-                }
-            }
-        }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
-    }
-
-    private void checkPermissions() {
-        TedPermission.with(this)
-                .setPermissionListener(new PermissionListener() {
-                    @Override
-                    public void onPermissionGranted() {
-                        mViewModel.loadList(mFilteredTag);
-                    }
-
-                    @Override
-                    public void onPermissionDenied(ArrayList<String> deniedPermissions) {
-                        finish();
-                    }
-                })
-                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
-                .check();
     }
 
     private Tag getTagByMenuId(int id) {

@@ -6,13 +6,17 @@
         <variable
             name="data"
             type="com.mason.kakao.masonsgallary.model.data.ImageData" />
+        <variable
+            name="viewModel"
+            type="com.mason.kakao.masonsgallary.images.ImagesContract.ViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground">
+        android:background="?attr/selectableItemBackground"
+        app:onLongClick="@{() -> viewModel.onLongClick(data)}">
 
         <ImageView
             android:id="@+id/image_tag"

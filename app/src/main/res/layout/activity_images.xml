@@ -9,7 +9,7 @@
             type="java.util.List" />
         <variable
             name="viewModel"
-            type="com.mason.kakao.masonsgallary.images.ImagesViewModel" />
+            type="com.mason.kakao.masonsgallary.images.ImagesContract.ViewModel" />
     </data>
 
     <android.support.v4.widget.DrawerLayout
@@ -30,7 +30,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:visibility="@{viewModel.showList ? View.VISIBLE : View.GONE}"
-                app:items="@{viewModel.mList}"
+                app:items="@{viewModel.list}"
                 />
 
             <ProgressBar

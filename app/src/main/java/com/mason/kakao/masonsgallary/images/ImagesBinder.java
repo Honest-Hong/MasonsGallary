@@ -2,6 +2,7 @@ package com.mason.kakao.masonsgallary.images;
 
 import android.databinding.BindingAdapter;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
@@ -17,5 +18,16 @@ public class ImagesBinder {
     public static void setImageList(RecyclerView recyclerView, List<ImageData> list) {
         ImagesAdapter adapter = (ImagesAdapter) recyclerView.getAdapter();
         adapter.setList(list);
+    }
+
+    @BindingAdapter("app:onLongClick")
+    public static void setOnLongClick(View view, final ImageLongClickListener newValue) {
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                newValue.onLongClick(null);
+                return false;
+            }
+        });
     }
 }

@@ -20,7 +20,6 @@ import com.gun0912.tedpermission.TedPermission;
 import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
-import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
@@ -28,30 +27,33 @@ import com.mason.kakao.masonsgallary.model.data.Tag;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.annotations.NonNull;
+import javax.inject.Inject;
 
 public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesContracter.View, TagChangeListener {
     private RecyclerView mRecyclerView;
-    private ImagesAdapter mImagesAdapter;
     private ProgressBar mProgressBar;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    private ImagesContracter.Presenter mPresenter;
+    @Inject ImagesAdapter mImagesAdapter;
+    @Inject ImagesContracter.Presenter mPresenter;
+
     private Tag mFilteredTag = Tag.All;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mPresenter = new ImagesPresenter(this, MasonApplication.get(this).getImagesRepository());
         checkPermissions();
     }
 
     @Override
     public void setupActivity() {
         setContentView(R.layout.activity_images);
+
+        MasonApplication.get(this)
+                .getAppComponent()
+                .plus(new ImagesActivityModule(this))
+                .inject(this);
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -61,7 +63,6 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this, this);
         mRecyclerView.setAdapter(mImagesAdapter);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         setupDrawer();

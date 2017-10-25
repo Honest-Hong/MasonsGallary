@@ -14,6 +14,8 @@ import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * Created by kakao on 2017. 10. 20..
@@ -23,6 +25,7 @@ public class ImageVH extends BaseVH<ImageData>{
     private Context context;
     private ImageView imageTag;
     private ImageView imageView;
+    private TextView textDate;
     private TextView textName;
     private TextView textPath;
 
@@ -31,6 +34,7 @@ public class ImageVH extends BaseVH<ImageData>{
         this.context = itemView.getContext();
         imageTag = itemView.findViewById(R.id.image_tag);
         imageView = itemView.findViewById(R.id.image_view);
+        textDate = itemView.findViewById(R.id.text_date);
         textName = itemView.findViewById(R.id.text_name);
         textPath = itemView.findViewById(R.id.text_path);
     }
@@ -78,6 +82,7 @@ public class ImageVH extends BaseVH<ImageData>{
                 .fit()
                 .centerCrop()
                 .into(imageView);
+        textDate.setText(DateFormat.getDateTimeInstance().format(new Date(Long.parseLong(data.getDate()) * 1000)));
         textName.setText(data.getName());
         textPath.setText(data.getPath());
     }

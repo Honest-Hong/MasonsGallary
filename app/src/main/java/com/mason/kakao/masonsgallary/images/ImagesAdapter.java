@@ -34,19 +34,21 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
 
     @Override
     public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
-    }
-
-    @Override
-    public void onBindViewHolder(ImageVH holder, final int position) {
-        holder.setupView(list.get(position));
+        final ImageVH holder = new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                int position = holder.getAdapterPosition();
                 mTagChangeListener.selectTag(list.get(position));
                 return false;
             }
         });
+        return holder;
+    }
+
+    @Override
+    public void onBindViewHolder(final ImageVH holder, int position) {
+        holder.setupView(list.get(position));
     }
 
     @Override

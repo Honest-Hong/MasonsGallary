@@ -1,5 +1,6 @@
 package com.mason.kakao.masonsgallary.images;
 
+import com.mason.kakao.masonsgallary.PerActivity;
 import com.mason.kakao.masonsgallary.model.ImagesRepository;
 
 import dagger.Module;
@@ -17,11 +18,13 @@ public class ImagesActivityModule {
     }
 
     @Provides
+    @PerActivity
     ImagesContracter.Presenter providePresenter(ImagesRepository imagesRepository) {
         return new ImagesPresenter(imagesActivity, imagesRepository);
     }
 
     @Provides
+    @PerActivity
     ImagesAdapter provideAdapter() {
         return new ImagesAdapter(imagesActivity, imagesActivity);
     }

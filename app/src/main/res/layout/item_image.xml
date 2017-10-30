@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
+        <import type="android.view.View" />
         <variable
-            name="data"
-            type="com.mason.kakao.masonsgallary.model.data.ImageData" />
+            name="listData"
+            type="com.mason.kakao.masonsgallary.model.data.ImageListData" />
         <variable
             name="viewModel"
             type="com.mason.kakao.masonsgallary.images.ImagesContract.ViewModel" />
@@ -16,7 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
-        app:onLongClick="@{() -> viewModel.onLongClick(data)}">
+        android:onClick="@{() -> viewModel.onClick(listData)}"
+        app:onLongClick="@{() -> viewModel.onLongClick(listData)}">
 
         <ImageView
             android:id="@+id/image_tag"
@@ -40,18 +42,33 @@
             tools:background="#123"
             />
 
+
+        <TextView
+            android:id="@+id/text_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:textColor="#44F"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:text="@{listData.imageData.date}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintVertical_chainStyle="spread"
+            tools:text="1010-10-10"
+            />
+
         <TextView
             android:id="@+id/text_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:textColor="#000"
-            android:textSize="13sp"
-            android:text="@{data.name}"
+            android:textSize="12sp"
+            android:text="@{listData.imageData.name}"
             app:layout_constraintLeft_toRightOf="@id/image_view"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_date"
             app:layout_constraintBottom_toTopOf="@+id/text_path"
-            app:layout_constraintVertical_chainStyle="spread"
             />
 
         <TextView
@@ -60,11 +77,23 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
-            android:textSize="10sp"
-            android:text="@{data.path}"
+            android:textSize="12sp"
+            android:text="@{listData.imageData.path}"
             app:layout_constraintLeft_toRightOf="@id/image_view"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_name"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <View
+            android:id="@+id/view_dim"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#200F"
+            android:visibility="@{listData.checked ? View.VISIBLE : View.GONE}"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             />
     </android.support.constraint.ConstraintLayout>

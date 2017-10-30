@@ -10,6 +10,7 @@ import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
 import com.mason.kakao.masonsgallary.images.ImagesContract;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
-    private List<ImageData> list;
+    private List<ImageListData> list;
     private ImagesContract.ViewModel mViewModel;
 
     public ImagesAdapter(Context context, ImagesContract.ViewModel viewModel) {
@@ -46,7 +47,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         return list.size();
     }
 
-    public void setList(List<ImageData> list) {
+    public void setList(List<ImageListData> list) {
         this.list = list;
         notifyDataSetChanged();
     }

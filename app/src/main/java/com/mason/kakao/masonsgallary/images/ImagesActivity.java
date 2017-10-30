@@ -9,6 +9,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.mason.kakao.masonsgallary.MasonApplication;
@@ -19,63 +20,75 @@ import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
 public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private ImagesContract.ViewModel mViewModel;
-    private ActivityImagesBinding mBinding;
-    private ActionBarDrawerToggle mDrawerToggle;
+    private ImagesContract.ViewModel viewModel;
+    private ActivityImagesBinding binding;
+    private ActionBarDrawerToggle drawerToggle;
+    private MenuItem menuDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel.onCreate();
+        viewModel.onCreate();
     }
 
     @Override
     public void setupActivity() {
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_images);
-        mViewModel = new ImagesViewModel(this, MasonApplication.get(this).getImagesRepository());
-        mBinding.setViewModel(mViewModel);
-        mBinding.setList(mViewModel.getList());
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_images);
+        viewModel = new ImagesViewModel(this, MasonApplication.get(this).getImagesRepository());
+        binding.setViewModel(viewModel);
+        binding.setList(viewModel.getList());
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-        mBinding.recyclerView.setHasFixedSize(true);
-        mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mBinding.recyclerView.setAdapter(new ImagesAdapter(this, mViewModel));
-        mBinding.navigation.setNavigationItemSelectedListener(this);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mBinding.drawerLayout, R.string.drawer_open, R.string.drawer_close);
-        mBinding.drawerLayout.addDrawerListener(mDrawerToggle);
+        binding.recyclerView.setHasFixedSize(true);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(new ImagesAdapter(this, viewModel));
+        binding.navigation.setNavigationItemSelectedListener(this);
+        drawerToggle = new ActionBarDrawerToggle(this, binding.drawerLayout, R.string.drawer_open, R.string.drawer_close);
+        binding.drawerLayout.addDrawerListener(drawerToggle);
     }
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-        mViewModel.changeFilter(tag);
+        viewModel.changeFilter(tag);
 
-        mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
         return false;
     }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_images, menu);
+        menuDelete = menu.findItem(R.id.menu_delete);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(mDrawerToggle.onOptionsItemSelected(item)) {
+        if(drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
+        switch(item.getItemId()) {
+            case R.id.menu_delete:
+                viewModel.removeCheckedList();
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 

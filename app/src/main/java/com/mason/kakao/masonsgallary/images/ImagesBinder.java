@@ -6,6 +6,7 @@ import android.view.View;
 
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 
 import java.util.List;
 
@@ -15,17 +16,17 @@ import java.util.List;
 
 public class ImagesBinder {
     @BindingAdapter("app:items")
-    public static void setImageList(RecyclerView recyclerView, List<ImageData> list) {
+    public static void setImageList(RecyclerView recyclerView, List<ImageListData> list) {
         ImagesAdapter adapter = (ImagesAdapter) recyclerView.getAdapter();
         adapter.setList(list);
     }
 
     @BindingAdapter("app:onLongClick")
-    public static void setOnLongClick(View view, final ImageLongClickListener newValue) {
+    public static void setOnLongClick(View view, final ImageLongClickListener longClickListener) {
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                newValue.onLongClick(null);
+                longClickListener.onLongClick(null);
                 return false;
             }
         });

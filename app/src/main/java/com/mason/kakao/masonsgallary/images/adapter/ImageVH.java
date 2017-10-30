@@ -12,6 +12,7 @@ import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseVH;
 import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -20,7 +21,7 @@ import java.io.File;
  * Created by kakao on 2017. 10. 20..
  */
 
-public class ImageVH extends BaseVH<ImageData>{
+public class ImageVH extends BaseVH<ImageListData>{
     private ItemImageBinding mBinding;
 
     public ImageVH(ItemImageBinding binding) {
@@ -29,9 +30,9 @@ public class ImageVH extends BaseVH<ImageData>{
     }
 
     @Override
-    public void setupView(ImageData data) {
+    public void setupView(ImageListData listData) {
         int drawableId = 0;
-        switch(data.getTag()) {
+        switch(listData.getImageData().getTag()) {
             case Ryan:
                 drawableId = R.drawable.tag_ryan;
                 break;
@@ -66,10 +67,10 @@ public class ImageVH extends BaseVH<ImageData>{
                     .into(mBinding.imageTag);
         }
         Picasso.with(mBinding.imageView.getContext())
-                .load(new File(data.getPath()))
+                .load(new File(listData.getImageData().getPath()))
                 .fit()
                 .centerCrop()
                 .into(mBinding.imageView);
-        mBinding.setData(data);
+        mBinding.setListData(listData);
     }
 }

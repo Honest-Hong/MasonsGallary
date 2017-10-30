@@ -1,11 +1,11 @@
 package com.mason.kakao.masonsgallary.images;
 
-import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 
 /**
- * Created by kakao on 2017. 10. 24..
+ * Created by kakao on 2017. 10. 30..
  */
 
 public interface ImageLongClickListener {
-    void onLongClick(ImageData imageData);
+    void onLongClick(ImageListData listData);
 }

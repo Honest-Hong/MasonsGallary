@@ -10,28 +10,31 @@ import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
 
 /**
  * Created by kakao on 2017. 10. 23..
  */
 
-public class ImagesViewModel implements ImagesContract.ViewModel, ImageLongClickListener {
+public class ImagesViewModel implements ImagesContract.ViewModel {
     private static final String TAG = "ImagesViewModel";
-    private final ObservableArrayList<ImageData> mList = new ObservableArrayList<>();
+    private final ObservableArrayList<ImageListData> list = new ObservableArrayList<>();
     private final ObservableBoolean showList = new ObservableBoolean(false);
-    private ImagesActivity mActivity;
-    private ImagesRepository mRepository;
-    private Tag mFilteredTag = Tag.All;
+    private ImagesActivity activity;
+    private ImagesRepository repository;
+    private Tag filteredTag = Tag.All;
 
-    public ImagesViewModel(ImagesActivity activity, ImagesRepository mRepository) {
-        this.mActivity = activity;
-        this.mRepository = mRepository;
+    public ImagesViewModel(ImagesActivity activity, ImagesRepository repository) {
+        this.activity = activity;
+        this.repository = repository;
     }
 
     @Override
@@ -40,35 +43,15 @@ public class ImagesViewModel implements ImagesContract.ViewModel, ImageLongClick
     }
 
     @Override
-    public void onLongClick(final ImageData imageData) {
-        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
-            @Override
-            public void onSelect(Tag tag) {
-                if (tag == mFilteredTag) {
-                    return;
-                }
-
-                int index = mList.indexOf(imageData);
-                if(mFilteredTag == Tag.All) {
-                    mList.set(index, imageData);
-                } else {
-                    mList.remove(index);
-                }
-            }
-        }).show(mActivity.getSupportFragmentManager(), SelectingTagDialog.class.getName());
-    }
-
-    @Override
     public void changeFilter(Tag tag) {
-        if(tag != mFilteredTag) {
-            mFilteredTag = tag;
-            loadList(mFilteredTag);
+        if(tag != filteredTag) {
+            filteredTag = tag;
+            loadList(filteredTag);
         }
     }
-
     @Override
-    public ObservableArrayList<ImageData> getList() {
-        return mList;
+    public ObservableArrayList<ImageListData> getList() {
+        return list;
     }
 
     @Override
@@ -76,15 +59,63 @@ public class ImagesViewModel implements ImagesContract.ViewModel, ImageLongClick
         return showList;
     }
 
+    @Override
+    public void onClick(ImageListData listData) {
+        listData.setChecked(!listData.isChecked());
+        int position = list.indexOf(listData);
+        list.set(position, listData);
+    }
+
+    @Override
+    public void onLongClick(final ImageListData listData) {
+        SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
+            @Override
+            public void onSelect(Tag tag) {
+                if (tag == filteredTag) {
+                    return;
+                }
+
+                int index = ImagesViewModel.this.list.indexOf(listData);
+                if(filteredTag == Tag.All) {
+                    ImagesViewModel.this.list.set(index, listData);
+                } else {
+                    ImagesViewModel.this.list.remove(index);
+                }
+            }
+        }).show(activity.getSupportFragmentManager(), SelectingTagDialog.class.getName());
+    }
+
+    @Override
+    public void removeCheckedList() {
+        Iterator<ImageListData> iterator = list.iterator();
+        while(iterator.hasNext()) {
+            ImageListData listData = iterator.next();
+            if(listData.isChecked()) {
+                repository.removeImageData(listData.getImageData());
+                iterator.remove();
+            }
+        }
+    }
+
     private void loadList(Tag tag) {
         showList.set(false);
-        mList.clear();
-        mRepository.getList(tag)
-                .subscribe(new SimpleObserver<List<ImageData>>() {
+        list.clear();
+        repository.getList(tag)
+                .map(new Function<List<ImageData>, List<ImageListData>>() {
                     @Override
-                    public void onNext(@NonNull List<ImageData> list) {
+                    public List<ImageListData> apply(List<ImageData> imageData) throws Exception {
+                        List<ImageListData> listData = new ArrayList<>();
+                        for(ImageData data : imageData) {
+                            listData.add(new ImageListData(data));
+                        }
+                        return listData;
+                    }
+                })
+                .subscribe(new SimpleObserver<List<ImageListData>>() {
+                    @Override
+                    public void onNext(@NonNull List<ImageListData> list) {
                         showList.set(true);
-                        mList.addAll(list);
+                        ImagesViewModel.this.list.addAll(list);
                     }
 
                     @Override
@@ -95,11 +126,11 @@ public class ImagesViewModel implements ImagesContract.ViewModel, ImageLongClick
     }
 
     private void checkPermissions() {
-        TedPermission.with(mActivity)
+        TedPermission.with(activity)
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        loadList(mFilteredTag);
+                        loadList(filteredTag);
                     }
 
                     @Override

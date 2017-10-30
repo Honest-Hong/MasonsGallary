@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -24,29 +25,42 @@ import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import io.reactivex.annotations.NonNull;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesAdapter.TagChangeListener {
-    private RecyclerView mRecyclerView;
-    private ImagesAdapter mImagesAdapter;
-    private ProgressBar mProgressBar;
-    private NavigationView mNavigationView;
-    private DrawerLayout mDrawerLayout;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private Tag mFilterTag = Tag.All;
-
-    private ImagesRepository mRepository;
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesAdapter.ItemEventListener {
+    // 이미지 리스트 뷰
+    private RecyclerView recyclerView;
+    // 이미지 리스트 어뎁터
+    private ImagesAdapter imagesAdapter;
+    // 데이터 로딩 지시자
+    private ProgressBar progressBar;
+    // 네비게이션 메뉴
+    private NavigationView navigationView;
+    // 드로우어
+    private DrawerLayout drawerLayout;
+    // 드로우어 토글 버튼
+    private ActionBarDrawerToggle drawerToggle;
+    // 현재 필터
+    private Tag filterTag = Tag.All;
+    // 이미지 목록 저장소
+    private ImagesRepository repository;
+    // 체크된 데이터 목록
+    private List<ImageListData> checkedListData = new ArrayList<>();
+    // 삭제 메뉴 버튼
+    private MenuItem menuDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRepository = MasonApplication.get(this).getImagesRepository();
+        repository = MasonApplication.get(this).getImagesRepository();
         checkPermissions();
     }
 
@@ -59,74 +73,110 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this, this);
-        mRecyclerView.setAdapter(mImagesAdapter);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        imagesAdapter = new ImagesAdapter(this, this);
+        recyclerView.setAdapter(imagesAdapter);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         setupDrawer();
     }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_images, menu);
+        menuDelete = menu.findItem(R.id.menu_delete);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(mDrawerToggle.onOptionsItemSelected(item)) {
+        if(drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
 
+        switch(item.getItemId()) {
+            case R.id.menu_delete:
+                removeCheckedList();
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-        if(tag != mFilterTag) {
-            mFilterTag = tag;
-            loadImages(mFilterTag);
+        if(tag != filterTag) {
+            filterTag = tag;
+            loadImages(filterTag);
         }
-        mDrawerLayout.closeDrawer(GravityCompat.START);
+        drawerLayout.closeDrawer(GravityCompat.START);
         return false;
     }
 
     @Override
-    public void selectTag(final ImageData imageData) {
-        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
+    public void onClick(ImageListData imageData) {
+        boolean isChecked = !imageData.isChecked();
+        imageData.setChecked(isChecked);
+        imagesAdapter.changeImageData(imageData);
+        if(isChecked) {
+            checkedListData.add(imageData);
+        } else {
+            checkedListData.remove(imageData);
+        }
+        menuDelete.setVisible(checkedListData.size() > 0);
+    }
+
+    @Override
+    public void onLongClick(final ImageListData listData) {
+        SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
             @Override
             public void onSelect(Tag tag) {
-                if(tag == mFilterTag) {
+                if(tag == filterTag) {
                     return;
                 }
 
-                if(mFilterTag == Tag.All) {
-                    mImagesAdapter.changeImageData(imageData);
-                    mRepository.changeImageData(imageData);
+                if(filterTag == Tag.All) {
+                    imagesAdapter.changeImageData(listData);
+                    repository.changeImageData(listData.getImageData());
                 } else {
-                    mImagesAdapter.removeImageData(imageData);
+                    imagesAdapter.removeImageData(listData);
                 }
             }
         }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
     }
 
+    @Override
+    public void onBackPressed() {
+        if(checkedListData.size() > 0) {
+            cancelCheckedList();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     private void loadImages(Tag tag) {
         setLoadingIndicator(true);
-        mRepository.getList(tag)
+        repository.getList(tag)
                 .subscribe(new SimpleObserver<List<ImageData>>() {
                     @Override
                     public void onNext(@NonNull List<ImageData> list) {
                         setLoadingIndicator(false);
-                        mImagesAdapter.setList(list);
+                        imagesAdapter.setList(list);
+                        checkedListData = new ArrayList<>();
+                        menuDelete.setVisible(false);
                     }
 
                     @Override
@@ -137,8 +187,8 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     }
 
     private void setLoadingIndicator(boolean load) {
-        mRecyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
-        mProgressBar.setVisibility(load ? View.VISIBLE : View.GONE);
+        recyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
+        progressBar.setVisibility(load ? View.VISIBLE : View.GONE);
     }
 
     private Tag getTagByMenuId(int id) {
@@ -176,10 +226,10 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     }
 
     private void setupDrawer() {
-        mNavigationView = (NavigationView) findViewById(R.id.navigation);
-        mNavigationView.setNavigationItemSelectedListener(this);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        navigationView = (NavigationView) findViewById(R.id.navigation);
+        navigationView.setNavigationItemSelectedListener(this);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -192,7 +242,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 invalidateOptionsMenu();
             }
         };
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
     }
 
     private void checkPermissions() {
@@ -200,7 +250,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        loadImages(mFilterTag);
+                        loadImages(filterTag);
                     }
 
                     @Override
@@ -210,5 +260,25 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 })
                 .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
                 .check();
+    }
+
+    private void removeCheckedList() {
+        Iterator<ImageListData> iterator = checkedListData.iterator();
+        while(iterator.hasNext()) {
+            ImageListData listData = iterator.next();
+            imagesAdapter.removeImageData(listData);
+            repository.removeImageData(listData.getImageData());
+            iterator.remove();
+        }
+    }
+
+    private void cancelCheckedList() {
+        Iterator<ImageListData> iterator = checkedListData.iterator();
+        while(iterator.hasNext()) {
+            ImageListData listData = iterator.next();
+            listData.setChecked(false);
+            imagesAdapter.changeImageData(listData);
+            iterator.remove();
+        }
     }
 }

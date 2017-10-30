@@ -55,6 +55,12 @@ public class ImagesRepository {
     public void changeImageData(ImageData imageData) {
     }
 
+    public void removeImageData(ImageData imageData) {
+        if(list != null) {
+            list.remove(imageData);
+        }
+    }
+
     private List<ImageData> searchImageData() {
         if(list != null) {
             return list;

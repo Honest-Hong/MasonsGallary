@@ -5,12 +5,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.view.adapter.holder.ImageVH;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,30 +21,40 @@ import java.util.List;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
-    private List<ImageData> list;
-    private TagChangeListener tagChangeListener;
+    private List<ImageListData> list;
+    private ItemEventListener itemEventListener;
 
-    public ImagesAdapter(Context context, TagChangeListener tagChangeListener) {
+    public ImagesAdapter(Context context, ItemEventListener itemEventListener) {
         this.context = context;
         this.list = Collections.emptyList();
-        this.tagChangeListener = tagChangeListener;
+        this.itemEventListener = itemEventListener;
     }
 
     @Override
     public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
-    }
-
-    @Override
-    public void onBindViewHolder(ImageVH holder, final int position) {
-        holder.setupView(list.get(position));
+        final ImageVH holder = new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = holder.getAdapterPosition();
+                itemEventListener.onClick(list.get(position));
+            }
+        });
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                tagChangeListener.selectTag(list.get(position));
+                int position = holder.getAdapterPosition();
+                itemEventListener.onLongClick(list.get(position));
                 return false;
             }
         });
+        return holder;
+
+    }
+
+    @Override
+    public void onBindViewHolder(final ImageVH holder, int position) {
+        holder.setupView(list.get(position));
     }
 
     @Override
@@ -51,21 +62,25 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         return list.size();
     }
 
-    public interface TagChangeListener {
-        void selectTag(ImageData imageData);
+    public interface ItemEventListener {
+        void onClick(ImageListData imageData);
+        void onLongClick(ImageListData imageData);
     }
 
     public void setList(List<ImageData> list) {
-        this.list = list;
+        this.list = new ArrayList<>();
+        for(ImageData imageData : list) {
+            this.list.add(new ImageListData(imageData));
+        }
         notifyDataSetChanged();
     }
 
-    public void changeImageData(ImageData imageData) {
+    public void changeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         notifyItemChanged(index);
     }
 
-    public void removeImageData(ImageData imageData) {
+    public void removeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         list.remove(index);
         notifyItemRemoved(index);

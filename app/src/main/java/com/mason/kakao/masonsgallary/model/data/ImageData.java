@@ -10,12 +10,14 @@ import android.os.Parcelable;
 public class ImageData implements Parcelable{
     private String path;
     private String name;
+    private String date;
     private Tag tag;
 
     public ImageData(String path, String name, Tag tag, String date) {
         this.path = path;
         this.name = name;
         this.tag = tag;
+        this.date = date;
     }
 
     protected ImageData(Parcel in) {
@@ -60,5 +62,9 @@ public class ImageData implements Parcelable{
 
     public void setTag(Tag tag) {
         this.tag = tag;
+    }
+
+    public String getDate() {
+        return date;
     }
 }

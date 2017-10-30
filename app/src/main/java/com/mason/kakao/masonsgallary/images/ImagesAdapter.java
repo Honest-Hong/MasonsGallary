@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,16 +19,21 @@ import java.util.List;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
-    private List<ImageData> list;
-    private TagChangeListener mTagChangeListener;
+    private List<ImageListData> list;
+    private ItemChangeListener itemChangeListener;
 
-    public ImagesAdapter(Context context, TagChangeListener tagChangeListener) {
-        this.context = context;
-        this.list = Collections.emptyList();
-        this.mTagChangeListener = tagChangeListener;
+    public interface ItemChangeListener {
+        void onClick(ImageListData listData);
+        void onLongClick(ImageListData listData);
     }
 
-    public void setList(List<ImageData> list) {
+    public ImagesAdapter(Context context, ItemChangeListener itemChangeListener) {
+        this.context = context;
+        this.list = Collections.emptyList();
+        this.itemChangeListener = itemChangeListener;
+    }
+
+    public void setList(List<ImageListData> list) {
         this.list = list;
         notifyDataSetChanged();
     }
@@ -35,11 +41,18 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     @Override
     public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
         final ImageVH holder = new ImageVH(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = holder.getAdapterPosition();
+                itemChangeListener.onClick(list.get(position));
+            }
+        });
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 int position = holder.getAdapterPosition();
-                mTagChangeListener.selectTag(list.get(position));
+                itemChangeListener.onLongClick(list.get(position));
                 return false;
             }
         });
@@ -56,12 +69,12 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         return list.size();
     }
 
-    public void changeImageData(ImageData imageData) {
+    public void changeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         notifyItemChanged(index);
     }
 
-    public void removeImageData(ImageData imageData) {
+    public void removeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         list.remove(index);
         notifyItemRemoved(index);

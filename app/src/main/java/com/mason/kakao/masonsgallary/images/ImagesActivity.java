@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -20,32 +21,29 @@ import com.gun0912.tedpermission.TedPermission;
 import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
-import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
-import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.annotations.NonNull;
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesContract.View, ImagesAdapter.ItemChangeListener {
+    private RecyclerView recyclerView;
+    private ImagesAdapter imagesAdapter;
+    private ProgressBar progressBar;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle drawerToggle;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesContracter.View, TagChangeListener {
-    private RecyclerView mRecyclerView;
-    private ImagesAdapter mImagesAdapter;
-    private ProgressBar mProgressBar;
-    private DrawerLayout mDrawerLayout;
-    private ActionBarDrawerToggle mDrawerToggle;
-
-    private ImagesContracter.Presenter mPresenter;
-    private Tag mFilteredTag = Tag.All;
+    private ImagesContract.Presenter presenter;
+    private Tag filteredTag = Tag.All;
+    private MenuItem menuDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mPresenter = new ImagesPresenter(this, MasonApplication.get(this).getImagesRepository());
+        presenter = new ImagesPresenter(this, MasonApplication.get(this).getImagesRepository());
         checkPermissions();
     }
 
@@ -58,76 +56,107 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mImagesAdapter = new ImagesAdapter(this, this);
-        mRecyclerView.setAdapter(mImagesAdapter);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        imagesAdapter = new ImagesAdapter(this, this);
+        recyclerView.setAdapter(imagesAdapter);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         setupDrawer();
     }
 
     @Override
-    public void showImages(List<ImageData> list) {
-        mImagesAdapter.setList(list);
+    public void showImages(List<ImageListData> list) {
+        imagesAdapter.setList(list);
     }
 
     @Override
     public void showLoadingIndicator(boolean show) {
-        mRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
-        mProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_images, menu);
+        menuDelete = menu.findItem(R.id.menu_delete);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(mDrawerToggle.onOptionsItemSelected(item)) {
+        if(drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
+        switch(item.getItemId()) {
+            case R.id.menu_delete:
+                presenter.removeCheckedImages();
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-        if(tag != mFilteredTag) {
-            mFilteredTag = tag;
-            mPresenter.loadImages(mFilteredTag);
+        if(tag != filteredTag) {
+            filteredTag = tag;
+            presenter.loadImages(filteredTag);
         }
 
-        mDrawerLayout.closeDrawer(GravityCompat.START);
+        drawerLayout.closeDrawer(GravityCompat.START);
         return false;
     }
 
     @Override
-    public void selectTag(final ImageData imageData) {
-        SelectingTagDialog.newInstance(imageData, new SelectingTagDialog.OnSelectListener() {
+    public void onClick(ImageListData listData) {
+        presenter.checkImageList(listData);
+    }
+
+    @Override
+    public void onLongClick(final ImageListData listData) {
+        SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
             @Override
             public void onSelect(Tag tag) {
-                if(tag == mFilteredTag) {
+                if(tag == filteredTag) {
                     return;
                 }
 
-                if(mFilteredTag == Tag.All) {
-                    mImagesAdapter.changeImageData(imageData);
-                    mPresenter.changeImageData(imageData);
+                if(filteredTag == Tag.All) {
+                    imagesAdapter.changeImageData(listData);
+                    presenter.changeImageData(listData);
                 } else {
-                    mImagesAdapter.removeImageData(imageData);
+                    imagesAdapter.removeImageData(listData);
                 }
             }
         }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
+    }
+
+    @Override
+    public void showChecked(ImageListData listData) {
+        imagesAdapter.changeImageData(listData);
+    }
+
+    @Override
+    public void showDeleteMenu(boolean show) {
+        menuDelete.setVisible(show);
+    }
+
+    @Override
+    public void removeListItem(ImageListData listData) {
+        imagesAdapter.removeImageData(listData);
     }
 
     private Tag getTagByMenuId(int id) {
@@ -167,8 +196,8 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     private void setupDrawer() {
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
         navigationView.setNavigationItemSelectedListener(this);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -179,7 +208,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 super.onDrawerClosed(drawerView);
             }
         };
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
     }
 
     private void checkPermissions() {
@@ -187,7 +216,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .setPermissionListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted() {
-                        mPresenter.loadImages(mFilteredTag);
+                        presenter.loadImages(filteredTag);
                     }
 
                     @Override

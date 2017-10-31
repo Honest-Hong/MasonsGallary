@@ -17,12 +17,19 @@ import java.util.List;
 
 /**
  * Created by kakao on 2017. 10. 20..
+ * 이미지 목록 어뎁터
+ * 아이템 클릭 이벤트를 전달해준다
  */
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
     private List<ImageListData> list;
     private ItemEventListener itemEventListener;
+
+    public interface ItemEventListener {
+        void onClick(ImageListData imageData);
+        void onLongClick(ImageListData imageData);
+    }
 
     public ImagesAdapter(Context context, ItemEventListener itemEventListener) {
         this.context = context;
@@ -54,7 +61,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
 
     @Override
     public void onBindViewHolder(final ImageVH holder, int position) {
-        holder.setupView(list.get(position));
+        holder.bindView(list.get(position));
     }
 
     @Override
@@ -62,11 +69,10 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         return list.size();
     }
 
-    public interface ItemEventListener {
-        void onClick(ImageListData imageData);
-        void onLongClick(ImageListData imageData);
-    }
-
+    /**
+     * 목록 설정 메소드
+     * @param list 이미지 목록
+     */
     public void setList(List<ImageData> list) {
         this.list = new ArrayList<>();
         for(ImageData imageData : list) {
@@ -75,11 +81,21 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         notifyDataSetChanged();
     }
 
+    /**
+     * 이미지 데이터 변경 메소드
+     * 다시 Bind할 수 있도록 해준다
+     * @param imageData 변경된 이미지 데이터
+     */
     public void changeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         notifyItemChanged(index);
     }
 
+    /**
+     * 이미지 데이터 제거 메소드
+     * 목록에서 이미지를 제거시켜준다
+     * @param imageData 제거된 이미지 데이터
+     */
     public void removeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
         list.remove(index);

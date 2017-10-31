@@ -126,6 +126,11 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         return false;
     }
 
+    /**
+     * 이미지 선택 이벤트 처리 메소드
+     * 이미지를 체크하거나 해제한다
+     * @param imageData 선택한 이미지
+     */
     @Override
     public void onClick(ImageListData imageData) {
         boolean isChecked = !imageData.isChecked();
@@ -139,6 +144,11 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         menuDelete.setVisible(checkedListData.size() > 0);
     }
 
+    /**
+     * 이미지 길게 선택 이벤트 처리 메소드
+     * 이미지의 태그를 변경할 수 있도록 해준다
+     * @param listData 선택한 이미지
+     */
     @Override
     public void onLongClick(final ImageListData listData) {
         SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
@@ -262,6 +272,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 .check();
     }
 
+    /**
+     * 체크한 이미지 목록을 삭제하는 메소드
+     */
     private void removeCheckedList() {
         Iterator<ImageListData> iterator = checkedListData.iterator();
         while(iterator.hasNext()) {
@@ -272,6 +285,9 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
     }
 
+    /**
+     * 체크 상태를 해제하는 메소드
+     */
     private void cancelCheckedList() {
         Iterator<ImageListData> iterator = checkedListData.iterator();
         while(iterator.hasNext()) {

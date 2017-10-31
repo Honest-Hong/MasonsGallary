@@ -22,6 +22,7 @@ import java.util.Locale;
 
 /**
  * Created by kakao on 2017. 10. 20..
+ * 이미지를 보여주는 뷰 홀더
  */
 
 public class ImageVH extends BaseVH<ImageListData>{
@@ -45,7 +46,7 @@ public class ImageVH extends BaseVH<ImageListData>{
     }
 
     @Override
-    public void setupView(ImageListData data) {
+    public void bindView(ImageListData data) {
         this.data = data;
         int drawableId = 0;
         switch(data.getImageData().getTag()) {
@@ -74,6 +75,7 @@ public class ImageVH extends BaseVH<ImageListData>{
                 drawableId = R.drawable.tag_con;
                 break;
         }
+        // 태그가 없는 경우 아무런 표시도 하지 않는다
         if(drawableId == 0) {
             imageTag.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
         } else {
@@ -89,8 +91,10 @@ public class ImageVH extends BaseVH<ImageListData>{
                 .into(imageView);
         textName.setText(data.getImageData().getName());
         textPath.setText(data.getImageData().getPath());
+        // 이미지 데이터에 저장된 시간은 초 단위이기 때문에 1000을 곱하여 포멧팅 해준다
         Date date = new Date(Long.parseLong(data.getImageData().getDate()) * 1000);
         textDate.setText(SimpleDateFormat.getInstance().format(date));
+        // 체크 유무에 따라 Dim을 표시해준다
         viewDim.setVisibility(data.isChecked()
                 ? View.VISIBLE
                 : View.GONE);

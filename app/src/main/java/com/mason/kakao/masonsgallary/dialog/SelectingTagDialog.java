@@ -15,9 +15,16 @@ import java.io.Serializable;
 
 /**
  * Created by kakao on 2017. 10. 24..
+ * 태그를 선택할 수 있는 다이얼로그
  */
 
 public class SelectingTagDialog extends DialogFragment {
+    /**
+     * 다이얼로그 생성 정적 메소드
+     * @param imageData 선택된 이미지 데이터
+     * @param onSelectListener 선택 결과 리스너
+     * @return 생성된 다이얼로그
+     */
     public static SelectingTagDialog newInstance(ImageData imageData, OnSelectListener onSelectListener) {
         SelectingTagDialog dialog = new SelectingTagDialog();
         Bundle args = new Bundle();
@@ -27,6 +34,12 @@ public class SelectingTagDialog extends DialogFragment {
         return dialog;
     }
 
+    /**
+     * AlertDialog.Builder를 사용하여 다이얼로그를 생성한다.
+     * 다이얼로그는 태그 목록을 포함하며 선택 결과를 onSelectListener가 전달한다
+     * @param savedInstanceState ..
+     * @return ..
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -46,6 +59,9 @@ public class SelectingTagDialog extends DialogFragment {
                 .create();
     }
 
+    /**
+     * 선택 결과 리스너
+     */
     public interface OnSelectListener extends Serializable {
         void onSelect(Tag tag);
     }

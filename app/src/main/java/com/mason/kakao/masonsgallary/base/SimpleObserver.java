@@ -3,30 +3,24 @@ package com.mason.kakao.masonsgallary.base;
 import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DefaultObserver;
 
 /**
  * Created by kakao on 2017. 10. 20..
+ * onNext와 onError만을 오버라이드 하도록 만든 간단한 옵저버
  */
 
-public class SimpleObserver<T> implements Observer<T> {
+public abstract class SimpleObserver<T> implements Observer<T> {
     @Override
     public void onSubscribe(@NonNull Disposable d) {
-
     }
 
     @Override
-    public void onNext(@NonNull T t) {
-
-    }
+    public abstract void onNext(@NonNull T t);
 
     @Override
-    public void onError(@NonNull Throwable e) {
-
-    }
+    public abstract void onError(@NonNull Throwable e);
 
     @Override
     public void onComplete() {
-
     }
 }

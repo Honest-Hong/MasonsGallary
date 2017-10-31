@@ -21,6 +21,10 @@ public class ImageListData {
         return imageData;
     }
 
+    public void updateImageData(ImageData imageData) {
+        imageData.setTag(imageData.getTag());
+    }
+
     public boolean isChecked() {
         return isChecked;
     }

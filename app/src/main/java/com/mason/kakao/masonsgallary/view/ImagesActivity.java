@@ -1,16 +1,19 @@
 package com.mason.kakao.masonsgallary.view;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +30,7 @@ import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
+import com.mason.kakao.masonsgallary.util.TagUtil;
 import com.mason.kakao.masonsgallary.view.adapter.ImagesAdapter;
 
 import java.util.ArrayList;
@@ -35,7 +39,7 @@ import java.util.List;
 
 import io.reactivex.annotations.NonNull;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesAdapter.ItemEventListener {
+public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImagesAdapter.ItemEventListener, ImageDetailFragment.ImageDetailEvents {
     // 이미지 리스트 뷰
     private RecyclerView recyclerView;
     // 이미지 리스트 어뎁터
@@ -111,13 +115,16 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
             case R.id.menu_delete:
                 removeCheckedList();
                 break;
+            case android.R.id.home:
+                onBackPressed();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
-        Tag tag = getTagByMenuId(item.getItemId());
+        Tag tag = TagUtil.getTagByMenu(item);
         if(tag != filterTag) {
             filterTag = tag;
             loadImages(filterTag);
@@ -129,19 +136,15 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     /**
      * 이미지 선택 이벤트 처리 메소드
      * 이미지를 체크하거나 해제한다
-     * @param imageData 선택한 이미지
+     * @param listData 선택한 이미지
      */
     @Override
-    public void onClick(ImageListData imageData) {
-        boolean isChecked = !imageData.isChecked();
-        imageData.setChecked(isChecked);
-        imagesAdapter.changeImageData(imageData);
-        if(isChecked) {
-            checkedListData.add(imageData);
+    public void onClick(ImageListData listData) {
+        if(checkedListData.size() > 0) {
+            checkListItem(listData);
         } else {
-            checkedListData.remove(imageData);
+            showDetailView(listData.getImageData());
         }
-        menuDelete.setVisible(checkedListData.size() > 0);
     }
 
     /**
@@ -151,30 +154,54 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
      */
     @Override
     public void onLongClick(final ImageListData listData) {
-        SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
-            @Override
-            public void onSelect(Tag tag) {
-                if(tag == filterTag) {
-                    return;
-                }
+        if(checkedListData.size() > 0) {
+            SelectingTagDialog.newInstance(listData.getImageData(), new SelectingTagDialog.OnSelectListener() {
+                @Override
+                public void onSelect(Tag tag) {
+                    if(tag == filterTag) {
+                        return;
+                    }
 
-                if(filterTag == Tag.All) {
-                    imagesAdapter.changeImageData(listData);
-                    repository.changeImageData(listData.getImageData());
-                } else {
-                    imagesAdapter.removeImageData(listData);
+                    if(filterTag == Tag.All) {
+                        imagesAdapter.changeImageData(listData);
+                        repository.changeImageData(listData.getImageData());
+                    } else {
+                        imagesAdapter.removeImageData(listData);
+                    }
                 }
-            }
-        }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
+            }).show(getSupportFragmentManager(), SelectingTagDialog.class.getName());
+        } else {
+            checkListItem(listData);
+        }
     }
 
     @Override
     public void onBackPressed() {
-        if(checkedListData.size() > 0) {
+        Fragment imageDetailFragment = getSupportFragmentManager().findFragmentByTag(ImageDetailFragment.class.getName());
+        if(imageDetailFragment != null && imageDetailFragment.isVisible()) {
+            hideDetailView();
+        } else if(checkedListData.size() > 0) {
             cancelCheckedList();
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void doDeleteFromDetail(ImageData imageData) {
+        hideDetailView();
+        imagesAdapter.removeImageData(imageData);
+        repository.removeImageData(imageData);
+    }
+
+    @Override
+    public void changeTagFromDetail(ImageData imageData) {
+        if(filterTag == Tag.All || filterTag == imageData.getTag()) {
+            imagesAdapter.changeImageData(imageData);
+        } else {
+            imagesAdapter.removeImageData(imageData);
+        }
+        repository.changeImageData(imageData);
     }
 
     private void loadImages(Tag tag) {
@@ -199,40 +226,6 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     private void setLoadingIndicator(boolean load) {
         recyclerView.setVisibility(load ? View.GONE : View.VISIBLE);
         progressBar.setVisibility(load ? View.VISIBLE : View.GONE);
-    }
-
-    private Tag getTagByMenuId(int id) {
-        Tag tag = null;
-        switch(id) {
-            case R.id.menu_all:
-                tag = Tag.All;
-                break;
-            case R.id.menu_ryan:
-                tag = Tag.Ryan;
-                break;
-            case R.id.menu_muzi:
-                tag = Tag.Muzi;
-                break;
-            case R.id.menu_apeach:
-                tag = Tag.Apeach;
-                break;
-            case R.id.menu_frodo:
-                tag = Tag.Frodo;
-                break;
-            case R.id.menu_neo:
-                tag = Tag.Neo;
-                break;
-            case R.id.menu_tube:
-                tag = Tag.Tube;
-                break;
-            case R.id.menu_jay_g:
-                tag = Tag.Jay_G;
-                break;
-            case R.id.menu_con:
-                tag = Tag.Con;
-                break;
-        }
-        return tag;
     }
 
     private void setupDrawer() {
@@ -283,6 +276,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
             repository.removeImageData(listData.getImageData());
             iterator.remove();
         }
+        menuDelete.setVisible(false);
     }
 
     /**
@@ -296,5 +290,37 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
             imagesAdapter.changeImageData(listData);
             iterator.remove();
         }
+        menuDelete.setVisible(false);
+    }
+
+    private void showDetailView(ImageData imageData) {
+        drawerToggle.setDrawerIndicatorEnabled(false);
+        recyclerView.setVisibility(View.GONE);
+        Fragment fragment = ImageDetailFragment.newInstance(imageData);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.frame_layout, fragment, ImageDetailFragment.class.getName())
+                .commit();
+    }
+
+    private void hideDetailView() {
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(ImageDetailFragment.class.getName());
+        getSupportFragmentManager()
+                .beginTransaction()
+                .remove(fragment)
+                .commit();
+        recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void checkListItem(ImageListData listData) {
+        boolean isChecked = !listData.isChecked();
+        listData.setChecked(isChecked);
+        imagesAdapter.changeImageData(listData);
+        if(isChecked) {
+            checkedListData.add(listData);
+        } else {
+            checkedListData.remove(listData);
+        }
+        menuDelete.setVisible(checkedListData.size() > 0);
     }
 }

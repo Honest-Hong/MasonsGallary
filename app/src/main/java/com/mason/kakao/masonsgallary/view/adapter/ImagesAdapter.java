@@ -91,6 +91,20 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         notifyItemChanged(index);
     }
 
+    public void changeImageData(ImageData imageData) {
+        int index = -1;
+        for(int i=0; i<list.size(); i++) {
+            if(list.get(i).getImageData().getPath().equals(imageData.getPath())) {
+                index = i;
+                break;
+            }
+        }
+        if(index != -1) {
+            list.get(index).updateImageData(imageData);
+            notifyItemChanged(index);
+        }
+    }
+
     /**
      * 이미지 데이터 제거 메소드
      * 목록에서 이미지를 제거시켜준다
@@ -100,5 +114,19 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         int index = list.indexOf(imageData);
         list.remove(index);
         notifyItemRemoved(index);
+    }
+
+    public void removeImageData(ImageData imageData) {
+        int index = -1;
+        for(int i=0; i<list.size(); i++) {
+            if(list.get(i).getImageData().equals(imageData)) {
+                index = i;
+                break;
+            }
+        }
+        if(index != -1) {
+            list.remove(index);
+            notifyItemRemoved(index);
+        }
     }
 }

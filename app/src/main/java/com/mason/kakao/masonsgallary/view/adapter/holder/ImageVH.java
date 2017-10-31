@@ -13,6 +13,7 @@ import com.mason.kakao.masonsgallary.base.BaseVH;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.ImageListData;
+import com.mason.kakao.masonsgallary.util.TagUtil;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -48,33 +49,7 @@ public class ImageVH extends BaseVH<ImageListData>{
     @Override
     public void bindView(ImageListData data) {
         this.data = data;
-        int drawableId = 0;
-        switch(data.getImageData().getTag()) {
-            case Ryan:
-                drawableId = R.drawable.tag_ryan;
-                break;
-            case Muzi:
-                drawableId = R.drawable.tag_muzi;
-                break;
-            case Apeach:
-                drawableId = R.drawable.tag_apeach;
-                break;
-            case Frodo:
-                drawableId = R.drawable.tag_frodo;
-                break;
-            case Neo:
-                drawableId = R.drawable.tag_neo;
-                break;
-            case Tube:
-                drawableId = R.drawable.tag_tube;
-                break;
-            case Jay_G:
-                drawableId = R.drawable.tag_jay_g;
-                break;
-            case Con:
-                drawableId = R.drawable.tag_con;
-                break;
-        }
+        int drawableId = TagUtil.getDrawableResourceByTag(data.getImageData().getTag());
         // 태그가 없는 경우 아무런 표시도 하지 않는다
         if(drawableId == 0) {
             imageTag.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));

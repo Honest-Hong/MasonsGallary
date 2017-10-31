@@ -10,7 +10,7 @@ import com.mason.kakao.masonsgallary.model.ImagesRepository;
  */
 
 public class MasonApplication extends Application {
-    private ImagesRepository imagesRepository;
+    private AppComponent appComponent;
 
     public static MasonApplication get(Context context) {
         return (MasonApplication)context.getApplicationContext();
@@ -19,10 +19,12 @@ public class MasonApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        imagesRepository = new ImagesRepository(this);
+        appComponent = DaggerAppComponent.builder()
+                .appModule(new AppModule(this))
+                .build();
     }
 
-    public ImagesRepository getImagesRepository() {
-        return imagesRepository;
+    public AppComponent getAppComponent() {
+        return appComponent;
     }
 }

@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.images;
+package com.mason.kakao.masonsgallary.main.imagelist;
 
 import android.content.Context;
 import android.graphics.Color;

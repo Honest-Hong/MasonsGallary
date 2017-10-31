@@ -17,6 +17,10 @@ public class ImageListData {
         return imageData;
     }
 
+    public void updateImageData(ImageData imageData) {
+        this.imageData.setTag(imageData.getTag());
+    }
+
     public void setImageData(ImageData imageData) {
         this.imageData = imageData;
     }

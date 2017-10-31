@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.images;
+package com.mason.kakao.masonsgallary.main.imagelist;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -20,17 +20,17 @@ import java.util.List;
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
     private List<ImageListData> list;
-    private ItemChangeListener itemChangeListener;
+    private ImageListItemEvent imageListItemEvent;
 
-    public interface ItemChangeListener {
-        void onClick(ImageListData listData);
-        void onLongClick(ImageListData listData);
+    public interface ImageListItemEvent {
+        void onImageClick(ImageListData imageListData);
+        void onImageLongClick(ImageListData imageListData);
     }
 
-    public ImagesAdapter(Context context, ItemChangeListener itemChangeListener) {
+    public ImagesAdapter(Context context, ImageListItemEvent imageListItemEvent) {
         this.context = context;
         this.list = Collections.emptyList();
-        this.itemChangeListener = itemChangeListener;
+        this.imageListItemEvent = imageListItemEvent;
     }
 
     public void setList(List<ImageListData> list) {
@@ -45,14 +45,14 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
             @Override
             public void onClick(View v) {
                 int position = holder.getAdapterPosition();
-                itemChangeListener.onClick(list.get(position));
+                imageListItemEvent.onImageClick(list.get(position));
             }
         });
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 int position = holder.getAdapterPosition();
-                itemChangeListener.onLongClick(list.get(position));
+                imageListItemEvent.onImageLongClick(list.get(position));
                 return false;
             }
         });
@@ -74,8 +74,32 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         notifyItemChanged(index);
     }
 
+    public void changeImageData(ImageData imageData) {
+        int index = -1;
+        for(int i=0; i<list.size(); i++) {
+            if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
+                index = i;
+                break;
+            }
+        }
+        list.get(index).updateImageData(imageData);
+        notifyItemChanged(index);
+    }
+
     public void removeImageData(ImageListData imageData) {
         int index = list.indexOf(imageData);
+        list.remove(index);
+        notifyItemRemoved(index);
+    }
+
+    public void removeImageData(ImageData imageData) {
+        int index = -1;
+        for(int i=0; i<list.size(); i++) {
+            if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
+                index = i;
+                break;
+            }
+        }
         list.remove(index);
         notifyItemRemoved(index);
     }

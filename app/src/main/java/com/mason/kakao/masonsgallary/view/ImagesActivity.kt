@@ -62,7 +62,7 @@ class ImagesActivity : BaseActivity(), ImagesAdapter.ItemEventListener, Navigati
         imagesAdapter.changeImageData(listData)
     }
 
-    override fun onLongClick(imageData: ImageListData?) {
+    override fun onLongClick(imageData: ImageListData) {
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -86,7 +86,7 @@ class ImagesActivity : BaseActivity(), ImagesAdapter.ItemEventListener, Navigati
                 .subscribe(object : SimpleObserver<List<ImageData>>() {
                     override fun onNext(t: List<ImageData>) {
                         setLoadingIndicator(false)
-                        imagesAdapter.setList(t)
+                        imagesAdapter.list = t.map { data -> ImageListData(data) }.toMutableList()
                     }
 
                     override fun onError(e: Throwable) {

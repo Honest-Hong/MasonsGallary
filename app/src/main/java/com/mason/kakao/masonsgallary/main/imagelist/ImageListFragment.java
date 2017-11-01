@@ -29,7 +29,7 @@ import butterknife.ButterKnife;
  * Created by kakao on 2017. 10. 31..
  */
 
-public class ImageListFragment extends BaseFragment implements ImageListContract.View, ImagesAdapter.ImageListItemEvent{
+public class ImageListFragment extends BaseFragment implements ImageListContract.View, ImageListAdapter.ImageListItemEvent{
     private Context context;
 
     @Inject
@@ -41,7 +41,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
 
-    private ImagesAdapter imagesAdapter;
+    private ImageListAdapter imageListAdapter;
 
     private MenuItem menuDelete;
 
@@ -87,8 +87,8 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        imagesAdapter = new ImagesAdapter(context, this);
-        recyclerView.setAdapter(imagesAdapter);
+        imageListAdapter = new ImageListAdapter(context, this);
+        recyclerView.setAdapter(imageListAdapter);
         presenter.loadImages(currentTag);
     }
 
@@ -99,7 +99,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     @Override
     public void showImageList(List<ImageListData> list) {
-        imagesAdapter.setList(list);
+        imageListAdapter.setList(list);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     @Override
     public void onChangeChecked(ImageListData listData) {
-        imagesAdapter.changeImageData(listData);
+        imageListAdapter.changeImageData(listData);
     }
 
     @Override
@@ -120,15 +120,15 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     @Override
     public void onImageRemoved(ImageData imageData) {
-        imagesAdapter.removeImageData(imageData);
+        imageListAdapter.removeImageData(imageData);
     }
 
     @Override
     public void onImageTagChanged(ImageData imageData) {
         if(currentTag == Tag.All || currentTag == imageData.getTag()) {
-            imagesAdapter.changeImageData(imageData);
+            imageListAdapter.changeImageData(imageData);
         } else {
-            imagesAdapter.removeImageData(imageData);
+            imageListAdapter.removeImageData(imageData);
         }
     }
 

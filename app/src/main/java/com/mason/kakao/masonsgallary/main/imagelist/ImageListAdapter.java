@@ -17,7 +17,7 @@ import java.util.List;
  * Created by kakao on 2017. 10. 20..
  */
 
-public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
+public class ImageListAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
     private List<ImageListData> list;
     private ImageListItemEvent imageListItemEvent;
@@ -27,7 +27,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         void onImageLongClick(ImageListData imageListData);
     }
 
-    public ImagesAdapter(Context context, ImageListItemEvent imageListItemEvent) {
+    public ImageListAdapter(Context context, ImageListItemEvent imageListItemEvent) {
         this.context = context;
         this.list = Collections.emptyList();
         this.imageListItemEvent = imageListItemEvent;

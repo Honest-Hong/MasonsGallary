@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,12 +54,13 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     private Tag currentTag = Tag.All;
 
-    private OnShowDetailListener onShowDetailListener;
+    private OnImageListEventListener onImageListEventListener;
 
     private boolean showList = false;
 
-    public interface OnShowDetailListener {
+    public interface OnImageListEventListener {
         void onShowDetail(ImageData imageData);
+        void onChangeCheckMode(boolean isCheckMode);
     }
 
     public static ImageListFragment newInstance(Tag tag) {
@@ -86,8 +86,8 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if(context instanceof OnShowDetailListener) {
-            onShowDetailListener = (OnShowDetailListener) context;
+        if(context instanceof OnImageListEventListener) {
+            onImageListEventListener = (OnImageListEventListener) context;
         }
     }
 
@@ -144,6 +144,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     @Override
     public void showDeleteMenu(boolean show) {
         menuDelete.setVisible(show);
+        onImageListEventListener.onChangeCheckMode(show);
     }
 
     @Override
@@ -195,7 +196,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     @Override
     public void onShowDetail(ImageListData listData) {
-        onShowDetailListener.onShowDetail(listData.getImageData());
+        onImageListEventListener.onShowDetail(listData.getImageData());
     }
 
     @Override

@@ -10,7 +10,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -19,7 +18,6 @@ import com.gun0912.tedpermission.TedPermission;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.main.detail.ImageDetailFragment;
-import com.mason.kakao.masonsgallary.main.imagelist.ImageListContract;
 import com.mason.kakao.masonsgallary.main.imagelist.ImageListFragment;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
@@ -27,7 +25,7 @@ import com.mason.kakao.masonsgallary.util.TagUtil;
 
 import java.util.ArrayList;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImageListFragment.OnShowDetailListener, ImageDetailFragment.ImageDataChangeListener {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImageListFragment.OnImageListEventListener, ImageDetailFragment.ImageDataChangeListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private ImageListFragment imageListFragment;
@@ -109,6 +107,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void onShowDetail(ImageData imageData) {
         showDetail(imageData);
+    }
+
+    @Override
+    public void onChangeCheckMode(boolean isCheckMode) {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(!isCheckMode);
     }
 
     @Override

@@ -90,6 +90,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             hideDetail();
         } else if (imageListFragment.onBackPressed()) {
             // ImagerListFragment에서 처리 완료
+        } else if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }

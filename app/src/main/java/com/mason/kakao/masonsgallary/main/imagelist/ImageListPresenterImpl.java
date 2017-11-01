@@ -7,6 +7,7 @@ import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import io.reactivex.functions.Function;
@@ -59,7 +60,14 @@ public class ImageListPresenterImpl implements ImageListContract.Presenter {
 
     @Override
     public void removeCheckedImages() {
-
+        Iterator<ImageListData> iterator = checkedList.iterator();
+        while(iterator.hasNext()) {
+            ImageListData data = iterator.next();
+            view.onImageRemoved(data.getImageData());
+            repository.removeImageData(data.getImageData());
+            iterator.remove();
+        }
+        view.showDeleteMenu(false);
     }
 
     @Override
@@ -67,6 +75,10 @@ public class ImageListPresenterImpl implements ImageListContract.Presenter {
         if(checkedList.size() > 0) {
             checkItem(listData);
             view.onChangeChecked(listData);
+
+            if(checkedList.size() == 0) {
+                view.showDeleteMenu(false);
+            }
         } else {
             view.onShowDetail(listData);
         }
@@ -74,12 +86,23 @@ public class ImageListPresenterImpl implements ImageListContract.Presenter {
 
     @Override
     public void onImageLongClick(ImageListData listData) {
-        if(checkedList.size() > 0) {
-
-        } else {
-            checkItem(listData);
-            view.onChangeChecked(listData);
+        if(checkedList.size() == 0) {
+            view.showDeleteMenu(true);
         }
+        checkItem(listData);
+        view.onChangeChecked(listData);
+    }
+
+    @Override
+    public void cancelChecked() {
+        Iterator<ImageListData> iterator = checkedList.iterator();
+        while(iterator.hasNext()) {
+            ImageListData data = iterator.next();
+            data.setChecked(false);
+            view.onChangeChecked(data);
+            iterator.remove();
+        }
+        view.showDeleteMenu(false);
     }
 
     private void checkItem(ImageListData listData) {

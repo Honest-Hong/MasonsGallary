@@ -20,7 +20,7 @@ public interface ImageListContract {
         void onImageTagChanged(ImageData imageData);
         void onShowDetail(ImageListData listData);
         void onChangeTag(Tag tag);
-        void setVisible(boolean visible);
+        boolean onBackPressed();
     }
 
     interface Presenter {
@@ -29,5 +29,6 @@ public interface ImageListContract {
         void removeCheckedImages();
         void onImageClick(ImageListData listData);
         void onImageLongClick(ImageListData listData);
+        void cancelChecked();
     }
 }

@@ -88,6 +88,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout);
         if(fragment instanceof ImageDetailFragment) {
             hideDetail();
+        } else if (imageListFragment.onBackPressed()) {
+            // ImagerListFragment에서 처리 완료
         } else {
             super.onBackPressed();
         }

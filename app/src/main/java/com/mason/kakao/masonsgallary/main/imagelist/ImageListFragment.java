@@ -57,7 +57,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     private OnShowDetailListener onShowDetailListener;
 
-    private boolean showList = true;
+    private boolean showList = false;
 
     public interface OnShowDetailListener {
         void onShowDetail(ImageData imageData);
@@ -96,7 +96,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
         ButterKnife.bind(this, view);
 
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
         recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
@@ -161,8 +161,12 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     }
 
     @Override
-    public void setVisible(boolean visible) {
-        recyclerView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    public boolean onBackPressed() {
+        if(menuDelete.isVisible()) {
+            presenter.cancelChecked();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -196,8 +200,10 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     @Override
     public void onChangeTag(Tag tag) {
-        currentTag = tag;
-        presenter.loadImages(tag);
+        if(tag != currentTag) {
+            currentTag = tag;
+            presenter.loadImages(tag);
+        }
     }
 
     private void toggleLayout() {

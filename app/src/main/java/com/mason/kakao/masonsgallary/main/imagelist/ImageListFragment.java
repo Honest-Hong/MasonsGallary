@@ -1,13 +1,18 @@
 package com.mason.kakao.masonsgallary.main.imagelist;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.mason.kakao.masonsgallary.ExtraKeys;
@@ -18,6 +23,7 @@ import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -29,7 +35,7 @@ import butterknife.ButterKnife;
  * Created by kakao on 2017. 10. 31..
  */
 
-public class ImageListFragment extends BaseFragment implements ImageListContract.View, ImageListAdapter.ImageListItemEvent{
+public class ImageListFragment extends BaseFragment implements ImageListContract.View {
     private Context context;
 
     @Inject
@@ -45,9 +51,13 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
     private MenuItem menuDelete;
 
+    private MenuItem menuLayout;
+
     private Tag currentTag = Tag.All;
 
     private OnShowDetailListener onShowDetailListener;
+
+    private boolean showList = true;
 
     public interface OnShowDetailListener {
         void onShowDetail(ImageData imageData);
@@ -87,7 +97,25 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        imageListAdapter = new ImageListAdapter(context, this);
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                if(showList) {
+                    if(position > 0) {
+                        outRect.top = 3;
+                    }
+                } else {
+                    if(position > 2) {
+                        outRect.top = 3;
+                    }
+                    if(position % 3 != 0) {
+                        outRect.left = 3;
+                    }
+                }
+            }
+        });
+        imageListAdapter = new ImageListAdapter();
         recyclerView.setAdapter(imageListAdapter);
         presenter.loadImages(currentTag);
     }
@@ -141,6 +169,10 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_images, menu);
         menuDelete = menu.findItem(R.id.menu_delete);
+        menuLayout = menu.findItem(R.id.menu_layout);
+        menuLayout.setIcon(showList
+                ? R.drawable.ic_view_list_black_24dp
+                : R.drawable.ic_grid_on_black_24dp);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -150,18 +182,11 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
             case R.id.menu_delete:
                 presenter.removeCheckedImages();
                 break;
+            case R.id.menu_layout:
+                toggleLayout();
+                break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onImageClick(ImageListData imageListData) {
-        presenter.onImageClick(imageListData);
-    }
-
-    @Override
-    public void onImageLongClick(ImageListData imageListData) {
-        presenter.onImageLongClick(imageListData);
     }
 
     @Override
@@ -173,5 +198,94 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
     public void onChangeTag(Tag tag) {
         currentTag = tag;
         presenter.loadImages(tag);
+    }
+
+    private void toggleLayout() {
+        showList = !showList;
+        menuLayout.setIcon(showList
+                ? R.drawable.ic_view_list_black_24dp
+                : R.drawable.ic_grid_on_black_24dp);
+        recyclerView.setLayoutManager(showList
+                ? new LinearLayoutManager(context)
+                : new GridLayoutManager(context, 3));
+        recyclerView.setAdapter(imageListAdapter);
+    }
+
+    public class ImageListAdapter extends RecyclerView.Adapter<ImageVH> {
+
+        private List<ImageListData> list;
+
+        public ImageListAdapter() {
+            this.list = Collections.emptyList();
+        }
+
+        public void setList(List<ImageListData> list) {
+            this.list = list;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
+            final ImageVH holder =
+                    new ImageVH(LayoutInflater.from(context).inflate(showList
+                                    ? R.layout.item_image_list
+                                    : R.layout.item_image_grid
+                            , parent, false));
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = holder.getAdapterPosition();
+                    presenter.onImageClick(list.get(position));
+                }
+            });
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    int position = holder.getAdapterPosition();
+                    presenter.onImageLongClick(list.get(position));
+                    return false;
+                }
+            });
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(final ImageVH holder, int position) {
+            holder.setupView(list.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
+
+        public void changeImageData(ImageListData imageData) {
+            int index = list.indexOf(imageData);
+            notifyItemChanged(index);
+        }
+
+        public void changeImageData(ImageData imageData) {
+            int index = -1;
+            for(int i=0; i<list.size(); i++) {
+                if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
+                    index = i;
+                    break;
+                }
+            }
+            list.get(index).updateImageData(imageData);
+            notifyItemChanged(index);
+        }
+
+        public void removeImageData(ImageData imageData) {
+            int index = -1;
+            for(int i=0; i<list.size(); i++) {
+                if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
+                    index = i;
+                    break;
+                }
+            }
+            list.remove(index);
+            notifyItemRemoved(index);
+        }
     }
 }

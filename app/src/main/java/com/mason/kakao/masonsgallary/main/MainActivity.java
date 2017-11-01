@@ -10,6 +10,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, ImageListFragment.OnShowDetailListener, ImageDetailFragment.ImageDataChangeListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
-    private ImageListContract.View imageListView;
+    private ImageListFragment imageListFragment;
     private final Object fence = new Object();
 
     @Override
@@ -50,11 +51,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
         setupDrawer();
 
-        ImageListFragment fragment = ImageListFragment.newInstance(Tag.All);
-        imageListView = fragment;
+        imageListFragment = ImageListFragment.newInstance(Tag.All);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.frame_layout, fragment, ImageListFragment.class.getName())
+                .replace(R.id.frame_layout, imageListFragment, ImageListFragment.class.getName())
                 .commit();
     }
 
@@ -110,12 +110,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void onImageRemoved(ImageData imageData) {
         hideDetail();
-        imageListView.onImageRemoved(imageData);
+        imageListFragment.onImageRemoved(imageData);
     }
 
     @Override
     public void onImageTagChange(ImageData imageData) {
-        imageListView.onImageTagChanged(imageData);
+        imageListFragment.onImageTagChanged(imageData);
     }
 
     private void setupDrawer() {
@@ -154,17 +154,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void changeTag(Tag tag) {
-        imageListView.onChangeTag(tag);
+        imageListFragment.onChangeTag(tag);
     }
 
     private void showDetail(ImageData imageData) {
         synchronized (fence) {
-            hideDetail();
-            imageListView.setVisible(false);
             drawerToggle.setDrawerIndicatorEnabled(false);
             ImageDetailFragment fragment = ImageDetailFragment.newInstance(imageData);
             getSupportFragmentManager()
                     .beginTransaction()
+                    .hide(imageListFragment)
                     .add(R.id.frame_layout, fragment, ImageDetailFragment.class.getName())
                     .commit();
         }
@@ -172,13 +171,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void hideDetail() {
         synchronized (fence) {
-            imageListView.setVisible(true);
             drawerToggle.setDrawerIndicatorEnabled(true);
             ImageDetailFragment fragment = (ImageDetailFragment)getSupportFragmentManager().findFragmentByTag(ImageDetailFragment.class.getName());
             if(fragment != null) {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .remove(fragment)
+                        .show(imageListFragment)
                         .commit();
             }
         }

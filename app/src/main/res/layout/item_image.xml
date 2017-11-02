@@ -5,11 +5,11 @@
     <data>
         <import type="android.view.View" />
         <variable
-            name="listData"
-            type="com.mason.kakao.masonsgallary.model.data.ImageListData" />
+            name="listItemVM"
+            type="com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel" />
         <variable
             name="viewModel"
-            type="com.mason.kakao.masonsgallary.images.ImagesContract.ViewModel" />
+            type="com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout
@@ -17,8 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
-        android:onClick="@{() -> viewModel.onClick(listData)}"
-        app:onLongClick="@{() -> viewModel.onLongClick(listData)}">
+        android:onClick="@{() -> viewModel.onClick(listItemVM)}"
+        app:onLongClick="@{() -> viewModel.onLongClick(listItemVM)}">
 
         <ImageView
             android:id="@+id/image_tag"
@@ -28,6 +28,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="@+id/image_view"
             app:layout_constraintBottom_toBottomOf="@+id/image_view"
+            picasso:fit="@{listItemVM.tagImage}"
             tools:src="@mipmap/ic_launcher_round"
             />
 
@@ -38,6 +39,7 @@
             android:layout_marginStart="12dp"
             app:layout_constraintLeft_toRightOf="@id/image_tag"
             app:layout_constraintTop_toTopOf="parent"
+            picasso:fitCenterCrop="@{listItemVM.path}"
             tools:src="@mipmap/ic_launcher"
             tools:background="#123"
             />
@@ -51,7 +53,7 @@
             android:textColor="#44F"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:text="@{listData.imageData.date}"
+            android:text="@{listItemVM.date}"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintVertical_chainStyle="spread"
@@ -65,7 +67,7 @@
             android:layout_marginStart="12dp"
             android:textColor="#000"
             android:textSize="12sp"
-            android:text="@{listData.imageData.name}"
+            android:text="@{listItemVM.name}"
             app:layout_constraintLeft_toRightOf="@id/image_view"
             app:layout_constraintTop_toBottomOf="@id/text_date"
             app:layout_constraintBottom_toTopOf="@+id/text_path"
@@ -78,7 +80,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
             android:textSize="12sp"
-            android:text="@{listData.imageData.path}"
+            android:text="@{listItemVM.path}"
             app:layout_constraintLeft_toRightOf="@id/image_view"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_name"
@@ -90,7 +92,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="#200F"
-            android:visibility="@{listData.checked ? View.VISIBLE : View.GONE}"
+            android:visibility="@{listItemVM.checked ? View.VISIBLE : View.GONE}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"

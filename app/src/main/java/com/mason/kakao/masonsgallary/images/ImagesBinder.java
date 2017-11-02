@@ -3,11 +3,13 @@ package com.mason.kakao.masonsgallary.images;
 import android.databinding.BindingAdapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
-import com.mason.kakao.masonsgallary.model.data.ImageData;
-import com.mason.kakao.masonsgallary.model.data.ImageListData;
+import com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ import java.util.List;
 
 public class ImagesBinder {
     @BindingAdapter("app:items")
-    public static void setImageList(RecyclerView recyclerView, List<ImageListData> list) {
+    public static void setImageList(RecyclerView recyclerView, List<ImageListItemViewModel> list) {
         ImagesAdapter adapter = (ImagesAdapter) recyclerView.getAdapter();
         adapter.setList(list);
     }
@@ -30,5 +32,22 @@ public class ImagesBinder {
                 return false;
             }
         });
+    }
+
+    @BindingAdapter("picasso:fitCenterCrop")
+    public static void setImage(ImageView imageView, String path) {
+        Picasso.with(imageView.getContext())
+                .load(new File(path))
+                .fit()
+                .centerCrop()
+                .into(imageView);
+    }
+
+    @BindingAdapter("picasso:fit")
+    public static void setImage(ImageView imageView, int resourceId) {
+        Picasso.with(imageView.getContext())
+                .load(resourceId)
+                .fit()
+                .into(imageView);
     }
 }

@@ -9,7 +9,7 @@
             type="java.util.List" />
         <variable
             name="viewModel"
-            type="com.mason.kakao.masonsgallary.images.ImagesContract.ViewModel" />
+            type="com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel" />
     </data>
 
     <android.support.v4.widget.DrawerLayout

@@ -1,5 +1,6 @@
 package com.mason.kakao.masonsgallary.images;
 
+import android.Manifest;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -12,15 +13,20 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
 import com.mason.kakao.masonsgallary.databinding.ActivityImagesBinding;
 import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
+import com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
+import java.util.ArrayList;
+
 public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private ImagesContract.ViewModel viewModel;
+    private ImagesViewModel viewModel;
     private ActivityImagesBinding binding;
     private ActionBarDrawerToggle drawerToggle;
     private MenuItem menuDelete;
@@ -28,7 +34,7 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel.onCreate();
+        checkPermissions();
     }
 
     @Override
@@ -36,7 +42,6 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         binding = DataBindingUtil.setContentView(this, R.layout.activity_images);
         viewModel = new ImagesViewModel(this, MasonApplication.get(this).getImagesRepository());
         binding.setViewModel(viewModel);
-        binding.setList(viewModel.getList());
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -124,5 +129,21 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 break;
         }
         return tag;
+    }
+
+    private void checkPermissions() {
+        TedPermission.with(this)
+                .setPermissionListener(new PermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                        viewModel.loadFirst();
+                    }
+
+                    @Override
+                    public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                    }
+                })
+                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .check();
     }
 }

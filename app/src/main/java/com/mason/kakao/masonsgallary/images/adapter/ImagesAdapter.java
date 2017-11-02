@@ -8,9 +8,8 @@ import android.view.ViewGroup;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
-import com.mason.kakao.masonsgallary.images.ImagesContract;
-import com.mason.kakao.masonsgallary.model.data.ImageData;
-import com.mason.kakao.masonsgallary.model.data.ImageListData;
+import com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel;
+import com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,10 +20,10 @@ import java.util.List;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
-    private List<ImageListData> list;
-    private ImagesContract.ViewModel mViewModel;
+    private List<ImageListItemViewModel> list;
+    private ImagesViewModel mViewModel;
 
-    public ImagesAdapter(Context context, ImagesContract.ViewModel viewModel) {
+    public ImagesAdapter(Context context, ImagesViewModel viewModel) {
         this.context = context;
         this.list = Collections.emptyList();
         this.mViewModel = viewModel;
@@ -47,7 +46,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
         return list.size();
     }
 
-    public void setList(List<ImageListData> list) {
+    public void setList(List<ImageListItemViewModel> list) {
         this.list = list;
         notifyDataSetChanged();
     }

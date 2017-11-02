@@ -38,7 +38,7 @@ class ImagesAdapter(
         return holder
     }
 
-    override fun onBindViewHolder(holder: ImageVH?, position: Int) {
+    override fun onBindViewHolder(holder: ImageVH, position: Int) {
         holder?.bindView(list[position])
     }
 

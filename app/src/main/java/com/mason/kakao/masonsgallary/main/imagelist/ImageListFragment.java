@@ -3,9 +3,11 @@ package com.mason.kakao.masonsgallary.main.imagelist;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,12 +20,16 @@ import com.mason.kakao.masonsgallary.ExtraKeys;
 import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseFragment;
+import com.mason.kakao.masonsgallary.base.BaseVH;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.ImageListData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -97,6 +103,7 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
+        recyclerView.setItemAnimator(null);
         recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
@@ -218,81 +225,163 @@ public class ImageListFragment extends BaseFragment implements ImageListContract
         recyclerView.setAdapter(imageListAdapter);
     }
 
-    public class ImageListAdapter extends RecyclerView.Adapter<ImageVH> {
-
-        private List<ImageListData> list;
+    public class ImageListAdapter extends RecyclerView.Adapter<BaseVH> {
+        private Map<Long, List<ImageListData>> listMap;
 
         public ImageListAdapter() {
-            this.list = Collections.emptyList();
+            this.listMap = new LinkedHashMap<>();
         }
 
         public void setList(List<ImageListData> list) {
-            this.list = list;
+            listMap.clear();
+            for(ImageListData data : list) {
+                long date = Long.parseLong(data.getImageData().getDate()) / (60 * 60 * 24);
+                if(!listMap.containsKey(date)) {
+                    listMap.put(date , new ArrayList<ImageListData>());
+                }
+                listMap.get(date).add(data);
+            }
             notifyDataSetChanged();
         }
 
         @Override
-        public ImageVH onCreateViewHolder(ViewGroup parent, int viewType) {
-            final ImageVH holder =
-                    new ImageVH(LayoutInflater.from(context).inflate(showList
-                                    ? R.layout.item_image_list
-                                    : R.layout.item_image_grid
-                            , parent, false));
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = holder.getAdapterPosition();
-                    presenter.onImageClick(list.get(position));
-                }
-            });
-            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    int position = holder.getAdapterPosition();
-                    presenter.onImageLongClick(list.get(position));
-                    return false;
-                }
-            });
-            return holder;
+        public BaseVH onCreateViewHolder(ViewGroup parent, int viewType) {
+            if(viewType == 0) {
+                return new DateVH(LayoutInflater.from(context).inflate(R.layout.item_date, parent, false));
+            } else {
+                final ImageVH holder =
+                        new ImageVH(LayoutInflater.from(context).inflate(showList
+                                        ? R.layout.item_image_list
+                                        : R.layout.item_image_grid
+                                , parent, false));
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        presenter.onImageClick((ImageListData) holder.getData());
+                    }
+                });
+                holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        presenter.onImageLongClick((ImageListData) holder.getData());
+                        return false;
+                    }
+                });
+                return holder;
+            }
         }
 
         @Override
-        public void onBindViewHolder(final ImageVH holder, int position) {
-            holder.setupView(list.get(position));
+        public void onBindViewHolder(final BaseVH holder, int position) {
+            if(holder.getItemViewType() == 0) {
+                String date = findDataByPosition(position).getImageData().getDate();
+                holder.setupView(Long.parseLong(date) * 1000);
+            } else {
+                Log.d("onBindViewHolder", findDataByPosition(position).toString());
+                Log.d("onBindViewHolder", "position: " + position);
+                holder.setupView(findDataByPosition(position));
+            }
         }
 
         @Override
         public int getItemCount() {
-            return list.size();
+            int total = 0;
+            for(Map.Entry<Long, List<ImageListData>> entry : listMap.entrySet()) {
+                total += entry.getValue().size() + (showList ? 1 : 0);
+            }
+            return total;
+//            return list.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if(showList) {
+                int cursor = 0;
+                for(Map.Entry<Long, List<ImageListData>> entry : listMap.entrySet()) {
+                    if(position < cursor + entry.getValue().size() + 1) {
+                        if(showList && position == cursor) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                    }
+                    cursor += entry.getValue().size() + (showList ? 1 : 0);
+                }
+                throw new NullPointerException("Invalid position: " + position);
+            } else {
+                return 1;
+            }
         }
 
         public void changeImageData(ImageListData imageData) {
-            int index = list.indexOf(imageData);
+            Log.d("changeImageData", imageData.toString());
+            int index = findPositionByImageData(imageData.getImageData());
+            Log.d("changeImageData", "index: " + index);
             notifyItemChanged(index);
         }
 
         public void changeImageData(ImageData imageData) {
-            int index = -1;
-            for(int i=0; i<list.size(); i++) {
-                if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
-                    index = i;
-                    break;
-                }
-            }
-            list.get(index).updateImageData(imageData);
+            Log.d("changeImageData", imageData.toString());
+            int index = findPositionByImageData(imageData);
+            Log.d("changeImageData", "index: " + index);
             notifyItemChanged(index);
         }
 
         public void removeImageData(ImageData imageData) {
-            int index = -1;
-            for(int i=0; i<list.size(); i++) {
-                if(imageData.getPath().equals(list.get(i).getImageData().getPath())) {
-                    index = i;
+            int position = 0;
+            for(Map.Entry<Long, List<ImageListData>> entry : listMap.entrySet()) {
+                if(showList) {
+                    position++;
+                }
+                boolean removed = false;
+                for(ImageListData data : entry.getValue()) {
+                    if(data.getImageData().getPath().equals(imageData.getPath())) {
+                        entry.getValue().remove(data);
+                        removed = true;
+                        break;
+                    }
+                    position++;
+                }
+                if(removed) {
+                    notifyItemRemoved(position);
+                    if(entry.getValue().size() == 0) {
+                        notifyItemRemoved(position - 1);
+                        listMap.remove(entry.getKey());
+                    }
                     break;
                 }
             }
-            list.remove(index);
-            notifyItemRemoved(index);
+        }
+
+        private ImageListData findDataByPosition(int position) {
+            int cursor = 0;
+            for(Map.Entry<Long, List<ImageListData>> entry : listMap.entrySet()) {
+                if(position < cursor + entry.getValue().size() + (showList ? 1 : 0)) {
+                    if(showList && position == cursor) {
+                        return entry.getValue().get(0);
+                    } else {
+                        return entry.getValue().get(position - cursor - (showList ? 1 : 0));
+                    }
+                }
+                cursor += entry.getValue().size() + (showList ? 1 : 0);
+            }
+            throw new NullPointerException("Invalid position: " + position);
+        }
+
+        private int findPositionByImageData(ImageData imageData) {
+            int position = 0;
+            for(Map.Entry<Long, List<ImageListData>> entry : listMap.entrySet()) {
+                if(showList) {
+                    position++;
+                }
+                for(ImageListData data : entry.getValue()) {
+                    if(data.getImageData().getPath().equals(imageData.getPath())) {
+                        return position;
+                    }
+                    position++;
+                }
+            }
+            return -1;
         }
     }
 }

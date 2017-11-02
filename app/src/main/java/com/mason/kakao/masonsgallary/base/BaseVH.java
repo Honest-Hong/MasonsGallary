@@ -7,11 +7,15 @@ import android.view.View;
  * Created by kakao on 2017. 10. 20..
  */
 
-public abstract class BaseVH<T> extends RecyclerView.ViewHolder {
-    protected T data;
+public abstract class BaseVH extends RecyclerView.ViewHolder {
+    protected Object data;
     public BaseVH(View itemView) {
         super(itemView);
     }
 
-    public abstract void setupView(T data);
+    public Object getData() {
+        return data;
+    }
+
+    public abstract void setupView(Object data);
 }

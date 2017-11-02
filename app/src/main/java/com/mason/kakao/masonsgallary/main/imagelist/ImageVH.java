@@ -23,7 +23,7 @@ import java.util.Date;
  * Created by kakao on 2017. 10. 20..
  */
 
-public class ImageVH extends BaseVH<ImageListData>{
+public class ImageVH extends BaseVH {
     private Context context;
     private ImageView imageTag;
     private ImageView imageView;
@@ -44,8 +44,9 @@ public class ImageVH extends BaseVH<ImageListData>{
     }
 
     @Override
-    public void setupView(ImageListData data) {
-        this.data = data;
+    public void setupView(Object _data) {
+        this.data = _data;
+        ImageListData data = (ImageListData) _data;
         int drawableId = 0;
         switch(data.getImageData().getTag()) {
             case Ryan:

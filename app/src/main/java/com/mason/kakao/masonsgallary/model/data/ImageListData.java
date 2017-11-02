@@ -32,4 +32,9 @@ public class ImageListData {
     public void setChecked(boolean checked) {
         isChecked = checked;
     }
+
+    @Override
+    public String toString() {
+        return imageData.toString() + ", checked(" + isChecked + ")";
+    }
 }

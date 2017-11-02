@@ -69,4 +69,9 @@ public class ImageData implements Parcelable{
     public String getDate() {
         return date;
     }
+
+    @Override
+    public String toString() {
+        return String.format("path(%s), name(%s), tag(%s), date(%s)", path, name, tag, date);
+    }
 }

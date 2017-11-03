@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.images.adapter;
+package com.mason.kakao.masonsgallary.ui.images.adapter;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
-import com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel;
-import com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel;
+import com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListItemViewModel;
+import com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListViewModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,9 +21,9 @@ import java.util.List;
 public class ImagesAdapter extends RecyclerView.Adapter<ImageVH> {
     private Context context;
     private List<ImageListItemViewModel> list;
-    private ImagesViewModel mViewModel;
+    private ImageListViewModel mViewModel;
 
-    public ImagesAdapter(Context context, ImagesViewModel viewModel) {
+    public ImagesAdapter(Context context, ImageListViewModel viewModel) {
         this.context = context;
         this.list = Collections.emptyList();
         this.mViewModel = viewModel;

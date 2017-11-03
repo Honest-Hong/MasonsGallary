@@ -1,12 +1,12 @@
-package com.mason.kakao.masonsgallary.images;
+package com.mason.kakao.masonsgallary.ui.images;
 
 import android.databinding.BindingAdapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
-import com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel;
+import com.mason.kakao.masonsgallary.ui.images.adapter.ImagesAdapter;
+import com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListItemViewModel;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -48,6 +48,15 @@ public class ImagesBinder {
         Picasso.with(imageView.getContext())
                 .load(resourceId)
                 .fit()
+                .into(imageView);
+    }
+
+    @BindingAdapter("picasso:fitCenterInside")
+    public static void setImageInside(ImageView imageView, String path) {
+        Picasso.with(imageView.getContext())
+                .load(new File(path))
+                .fit()
+                .centerInside()
                 .into(imageView);
     }
 }

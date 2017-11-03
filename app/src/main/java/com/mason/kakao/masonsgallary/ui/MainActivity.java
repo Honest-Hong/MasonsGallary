@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.images;
+package com.mason.kakao.masonsgallary.ui;
 
 import android.Manifest;
 import android.content.res.Configuration;
@@ -6,60 +6,63 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
-import com.mason.kakao.masonsgallary.MasonApplication;
 import com.mason.kakao.masonsgallary.R;
 import com.mason.kakao.masonsgallary.base.BaseActivity;
-import com.mason.kakao.masonsgallary.databinding.ActivityImagesBinding;
-import com.mason.kakao.masonsgallary.images.adapter.ImagesAdapter;
-import com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel;
+import com.mason.kakao.masonsgallary.databinding.ActivityMainBinding;
+import com.mason.kakao.masonsgallary.model.data.ImageData;
+import com.mason.kakao.masonsgallary.ui.detail.ImageDetailFragment;
+import com.mason.kakao.masonsgallary.ui.detail.OnImageDeleteListener;
+import com.mason.kakao.masonsgallary.ui.images.ImageListFragment;
 import com.mason.kakao.masonsgallary.model.data.Tag;
+import com.mason.kakao.masonsgallary.ui.images.adapter.OnShowDetailListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class ImagesActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private ImagesViewModel viewModel;
-    private ActivityImagesBinding binding;
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, OnShowDetailListener, OnImageDeleteListener {
+    private ActivityMainBinding binding;
     private ActionBarDrawerToggle drawerToggle;
     private MenuItem menuDelete;
+    private ImageListFragment listFragment = ImageListFragment.newInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkPermissions();
     }
 
     @Override
     public void setupActivity() {
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_images);
-        viewModel = new ImagesViewModel(this, MasonApplication.get(this).getImagesRepository());
-        binding.setViewModel(viewModel);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-        binding.recyclerView.setHasFixedSize(true);
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerView.setAdapter(new ImagesAdapter(this, viewModel));
         binding.navigation.setNavigationItemSelectedListener(this);
         drawerToggle = new ActionBarDrawerToggle(this, binding.drawerLayout, R.string.drawer_open, R.string.drawer_close);
         binding.drawerLayout.addDrawerListener(drawerToggle);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.frameLayout, listFragment)
+                .commit();
     }
 
     @Override
     public boolean onNavigationItemSelected(@android.support.annotation.NonNull MenuItem item) {
         Tag tag = getTagByMenuId(item.getItemId());
-        viewModel.changeFilter(tag);
+//        viewModel.changeFilter(tag);
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
         return false;
@@ -91,10 +94,53 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
         }
         switch(item.getItemId()) {
             case R.id.menu_delete:
-                viewModel.removeCheckedList();
+//                viewModel.removeCheckedList();
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(hideDetail()) {
+            // Do nothing
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onShowDetail(@NotNull ImageData imageData) {
+        showDetail(imageData);
+    }
+
+    @Override
+    public void onDelete(@NotNull ImageData imageData) {
+        hideDetail();
+        listFragment.onDelete(imageData);
+    }
+
+    private void showDetail(ImageData imageData) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .hide(listFragment)
+                .add(R.id.frameLayout, ImageDetailFragment.newInstance(imageData), ImageDetailFragment.class.getName())
+                .commit();
+    }
+
+    private boolean hideDetail() {
+        Fragment fragment = getSupportFragmentManager()
+                .findFragmentByTag(ImageDetailFragment.class.getName());
+        if(fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(fragment)
+                    .show(listFragment)
+                    .commit();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Tag getTagByMenuId(int id) {
@@ -129,21 +175,5 @@ public class ImagesActivity extends BaseActivity implements NavigationView.OnNav
                 break;
         }
         return tag;
-    }
-
-    private void checkPermissions() {
-        TedPermission.with(this)
-                .setPermissionListener(new PermissionListener() {
-                    @Override
-                    public void onPermissionGranted() {
-                        viewModel.loadFirst();
-                    }
-
-                    @Override
-                    public void onPermissionDenied(ArrayList<String> deniedPermissions) {
-                    }
-                })
-                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE)
-                .check();
     }
 }

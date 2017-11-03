@@ -1,4 +1,4 @@
-package com.mason.kakao.masonsgallary.images.viewmodel;
+package com.mason.kakao.masonsgallary.ui.images.viewmodel;
 
 import android.databinding.ObservableBoolean;
 

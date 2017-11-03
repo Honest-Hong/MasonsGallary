@@ -1,8 +1,8 @@
-package com.mason.kakao.masonsgallary.images.adapter;
+package com.mason.kakao.masonsgallary.ui.images.adapter;
 
 import com.mason.kakao.masonsgallary.base.BaseVH;
 import com.mason.kakao.masonsgallary.databinding.ItemImageBinding;
-import com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel;
+import com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListItemViewModel;
 
 /**
  * Created by kakao on 2017. 10. 20..

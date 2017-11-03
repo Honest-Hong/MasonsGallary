@@ -6,10 +6,10 @@
         <import type="android.view.View" />
         <variable
             name="listItemVM"
-            type="com.mason.kakao.masonsgallary.images.viewmodel.ImageListItemViewModel" />
+            type="com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListItemViewModel" />
         <variable
             name="viewModel"
-            type="com.mason.kakao.masonsgallary.images.viewmodel.ImagesViewModel" />
+            type="com.mason.kakao.masonsgallary.ui.images.viewmodel.ImageListViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout

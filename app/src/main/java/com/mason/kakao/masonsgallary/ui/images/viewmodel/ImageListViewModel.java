@@ -1,11 +1,12 @@
-package com.mason.kakao.masonsgallary.images.viewmodel;
+package com.mason.kakao.masonsgallary.ui.images.viewmodel;
 
 import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
+import android.databinding.ObservableField;
+import android.support.v7.app.AppCompatActivity;
 
 import com.mason.kakao.masonsgallary.base.SimpleObserver;
 import com.mason.kakao.masonsgallary.dialog.SelectingTagDialog;
-import com.mason.kakao.masonsgallary.images.ImagesActivity;
 import com.mason.kakao.masonsgallary.model.ImagesRepository;
 import com.mason.kakao.masonsgallary.model.data.ImageData;
 import com.mason.kakao.masonsgallary.model.data.Tag;
@@ -21,15 +22,14 @@ import io.reactivex.functions.Function;
  * Created by kakao on 2017. 10. 23..
  */
 
-public class ImagesViewModel {
+public class ImageListViewModel {
     public final ObservableArrayList<ImageListItemViewModel> list = new ObservableArrayList<>();
     public final ObservableBoolean showList = new ObservableBoolean(false);
-    private ImagesActivity activity;
+    public final ObservableField<ImageData> detailViewData = new ObservableField<>();
     private ImagesRepository repository;
     private Tag filteredTag = Tag.All;
 
-    public ImagesViewModel(ImagesActivity activity, ImagesRepository repository) {
-        this.activity = activity;
+    public ImageListViewModel(ImagesRepository repository) {
         this.repository = repository;
     }
 
@@ -45,25 +45,26 @@ public class ImagesViewModel {
     }
 
     public void onClick(ImageListItemViewModel viewModel) {
-        viewModel.checked.set(!viewModel.checked.get());
+        detailViewData.set(viewModel.getImageData());
+//        viewModel.checked.set(!viewModel.checked.get());
     }
 
     public void onLongClick(final ImageListItemViewModel viewModel) {
-        SelectingTagDialog.newInstance(viewModel.getImageData(), new SelectingTagDialog.OnSelectListener() {
-            @Override
-            public void onSelect(Tag tag) {
-                if (tag == filteredTag) {
-                    return;
-                }
-
-                int index = ImagesViewModel.this.list.indexOf(viewModel);
-                if(filteredTag == Tag.All) {
-                    ImagesViewModel.this.list.set(index, viewModel);
-                } else {
-                    ImagesViewModel.this.list.remove(index);
-                }
-            }
-        }).show(activity.getSupportFragmentManager(), SelectingTagDialog.class.getName());
+//        SelectingTagDialog.newInstance(viewModel.getImageData(), new SelectingTagDialog.OnSelectListener() {
+//            @Override
+//            public void onSelect(Tag tag) {
+//                if (tag == filteredTag) {
+//                    return;
+//                }
+//
+//                int index = ImageListViewModel.this.list.indexOf(viewModel);
+//                if(filteredTag == Tag.All) {
+//                    ImageListViewModel.this.list.set(index, viewModel);
+//                } else {
+//                    ImageListViewModel.this.list.remove(index);
+//                }
+//            }
+//        }).show(activity.getSupportFragmentManager(), SelectingTagDialog.class.getName());
     }
 
     public void removeCheckedList() {
@@ -95,7 +96,7 @@ public class ImagesViewModel {
                     @Override
                     public void onNext(@NonNull List<ImageListItemViewModel> list) {
                         showList.set(true);
-                        ImagesViewModel.this.list.addAll(list);
+                        ImageListViewModel.this.list.addAll(list);
                     }
 
                     @Override
